@@ -23,13 +23,39 @@
 import config as cf
 import model
 import csv
-
+from DISClib.ADT.graph import gr
+from DISClib.ADT import map as mp
+from DISClib.ADT import list as lt
+from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dijsktra as djk
+from DISClib.Utils import error as error
+assert config
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 """
 
 # Inicialización del Catálogo de libros
+def init():
+    """
+    Llama la funcion de inicializacion  del modelo.
+    """
+    # analyzer es utilizado para interactuar con el modelo
+    analyzer = model.newAnalyzer()
+    return analyzer
+
+
+# ___________________________________________________
+#  Funciones para la carga de datos y almacenamiento
+#  de datos en los modelos
+# ___________________________________________________
+
+def cargar_paises(analyzer):
+    countriesfile = cf.data_dir + countries
+    input_file = csv.DictReader(open(servicesfile, encoding="utf-8"),
+                                delimiter=",")
+    for country in input_file:
+        mp.put(analyzer["countries"],country["CountryName"],country)
 
 # Funciones para la carga de datos
 

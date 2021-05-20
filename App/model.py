@@ -41,6 +41,39 @@ los mismos.
 
 # Funciones para agregar informacion al catalogo
 
+def newAnalyzer():
+    """ Inicializa el analizador
+
+   stops: Tabla de hash para guardar los vertices del grafo
+   connections: Grafo para representar las rutas entre estaciones
+   components: Almacena la informacion de los componentes conectados
+   paths: Estructura que almancena los caminos de costo minimo desde un
+           vertice determinado a todos los otros vértices del grafo
+    """
+    try:
+        analyzer = {
+                    'countries': None,
+                    'connections': None,
+                    'components': None,
+                    'paths': None
+                    }
+
+        analyzer['countries'] = m.newMap(numelements=14000,
+                                     maptype='PROBING',
+                                     comparefunction=compareStopIds)
+
+        analyzer['connections'] = gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=True,
+                                              size=14000,
+                                              comparefunction=compareStopIds)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:newAnalyzer')
+
+
+# Funciones para agregar informacion al grafo
+
+
 # Funciones para creacion de datos
 
 # Funciones de consulta

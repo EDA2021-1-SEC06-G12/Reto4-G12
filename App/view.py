@@ -20,11 +20,14 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
-import config as cf
-import sys
-import controller
+import config
+from DISClib.ADT.graph import gr
+from DISClib.ADT import map as mp
 from DISClib.ADT import list as lt
-assert cf
+from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dijsktra as djk
+from DISClib.Utils import error as error
+assert config
 
 
 """
@@ -37,7 +40,7 @@ operación solicitada
 def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
-    print("2- ")
+
 
 catalog = None
 
@@ -49,6 +52,7 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
+        analyzer = controller.init()
 
     elif int(inputs[0]) == 2:
         pass
