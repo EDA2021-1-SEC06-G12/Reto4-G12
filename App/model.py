@@ -69,7 +69,8 @@ def newAnalyzer():
         analyzer['landing_points_country'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
         
-
+        analyzer["id_dado_lp"] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
         
         analyzer['vertices'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
@@ -94,6 +95,7 @@ def addLandingPoint(analyzer,point):
         city = lista[0]
         country = lista[1]
         mp.put(analyzer["landing_points_country"],point["id"],country)
+        mp.put(analyzer["id_dado_lp"], city, point["id"])
     else:
         None
 
@@ -117,7 +119,7 @@ def addLP_cable(analyzer,element):
         lt.addLast(lista, entry)
 
     id_destination = element["destination"]
-    country_destination = mp.get(analyzer["landing_points"], id_destination)
+    country_destination = mp.get(analyzer["landing_points_country"], id_destination)
     LP_cable_destination = (str(element["destination"]),str(element["cable_name"]))
     if mp.contains(analyzer["vertices"], country_destination):
         lista = mp.get(analyzer["vertices"], country_destination)
@@ -178,8 +180,9 @@ def addCapital_V_E(analyzer,element):
 
             gr.addEdge(graph, lp_cable, city, cost)
     else:
-        lt.addLast(lista_capitales_paises_sin_landingpoints, city)
+        lt.addLast(lista_capitales_paises_sin_landingpoints, (city,element))
 
+    sinMar(analyzer,lista_capitales_paises_sin_landingpoints)
    
 
 def edges_same_country(analyzer):
@@ -200,6 +203,26 @@ def edges_same_country(analyzer):
                 gr.addEdge(analyzer["connections"], lp1, lp2, cost)
 
 
+def sinMar(analyzer,lista):
+    i = it.newIterator(lista)
+    while it.hasNext(i):
+        element = it.next(i)
+        city = element[0]
+        info = element[1]
+        location = (element["latitude"],element["longitude"])
+        
+        lista3 = mp.keySet(analyzer["vertices"])
+        i=it.newIterator(lista3)
+        
+        while it.hasNext(i):
+            country=(it.next(i))
+            lista2 = mp.get(analyzer["vertices"],country)["value"]
+            ii = 1
+            while ii<=lt.size(lista2):
+                lp = lt.getElement(lista2, ii)["info"]
+                location
+
+                ii += 1
 
 
 
