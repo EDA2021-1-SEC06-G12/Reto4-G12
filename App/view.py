@@ -21,11 +21,13 @@
  """
 
 import config
+import model
 import controller
 from DISClib.ADT.graph import gr
 from DISClib.ADT import map as mp
 from DISClib.ADT import list as lt
 from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import cycles as ccs
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
 assert config
@@ -55,7 +57,12 @@ while True:
         controller.cargar(analyzer)
 
     elif int(inputs[0]) == 2:
-        None
+        landingpoint1=input('Ingrese el primer landing point de interés: ')
+        landingpoint2=input('Ingrese el segundo landing point de interés: ')
+        num1=(mp.get(analyzer[''],landingpoint1))['value']
+        num2=(mp.get(analyzer[''],landingpoint2))['value']
+        x=model.req1(analyzer,num1,num2)
+        print(x)       
 
     else:
         sys.exit(0)
