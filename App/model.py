@@ -33,6 +33,7 @@ from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
+from DISClib.Algorithms.Graphs import scc
 assert cf
 
 """
@@ -88,6 +89,9 @@ def newAnalyzer():
 
 
 # Funciones para agregar informacion al grafo
+
+
+
 def addLandingPoint(analyzer,point):
     cityandcountry = point["name"]
     lista=(cityandcountry.lower()).split(', ')
@@ -249,3 +253,41 @@ def compareLPs(LP1, LP2):
         return 1
     else:
         return -1
+
+
+def r1(analyzer):
+    newmap=mp.newMap()
+    x=scc.KosarajuSCC(analyzer['connections'])
+    mapa=x['idscc']
+    keys=mp.keySet(mapa)
+    i=1
+    while i<=lt.size(keys): 
+        key=lt.getElement(keys,i)
+        if key!=None:
+            value=mp.get(mapa,key)['value']
+            par=mp.get(newmap,key[0])
+            if par!=None:
+                mmap=me.getValue(par)
+                mp.put(mmap,value,None)
+            else:
+                mmap=mp.newMap()
+                mp.put(mmap,value,None)
+                mp.put(newmap,key[0],mmap)
+            i+=1
+    return newmap
+
+def req1(analyzer,num1,num2):
+    mapa=r1(analyzer)
+    val1=mp.get(mapa,num1)['value']
+    val2=mp.get(mapa,num2)['value']
+    nums=mp.keySet(val1)
+    i=1
+    final=False
+    centinela=True
+    while i<=lt.size(nums) and centinela:
+        num=lt.getElement(nums,i)
+        if mp.contains(val2,num):
+            centinela==False
+            final=True
+        i+=1
+    return final
