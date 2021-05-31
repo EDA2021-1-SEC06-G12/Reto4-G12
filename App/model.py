@@ -66,8 +66,10 @@ def newAnalyzer():
         analyzer['countries'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
 
-        analyzer['landing_points'] = mp.newMap(loadfactor=0.5,
+        analyzer['landing_points_country'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
+        
+
         
         analyzer['vertices'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
@@ -91,7 +93,7 @@ def addLandingPoint(analyzer,point):
     if len(lista) > 1:
         city = lista[0]
         country = lista[1]
-        mp.put(analyzer["landing_points"],point["id"],country)
+        mp.put(analyzer["landing_points_country"],point["id"],country)
     else:
         None
 
@@ -195,6 +197,7 @@ def edges_same_country(analyzer):
                 cost = {"distance":None,"capacity":None}
                 cost["distance"] = float(0.1)
                 cost["capacity"] = min(float(lp1["capacityTBPS"]),float(lp2["capacityTBPS"]))
+                gr.addEdge(analyzer["connections"], lp1, lp2, cost)
 
 
 

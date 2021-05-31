@@ -52,9 +52,10 @@ while True:
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         analyzer = controller.init()
+        controller.cargar(analyzer)
 
     elif int(inputs[0]) == 2:
-        controller.cargar(analyzer)
+        None
 
     else:
         sys.exit(0)
