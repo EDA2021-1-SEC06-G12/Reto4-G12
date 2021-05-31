@@ -103,7 +103,7 @@ def addLP_cable(analyzer,element):
     graph = analyzer["connections"]
   
     id_origin = element["\ufefforigin"]
-    country_origin = mp.get(analyzer["landing_points"], id_origin)
+    country_origin = mp.get(analyzer["landing_points_country"], id_origin)
 
     LP_cable_origin = (str(element["\ufefforigin"]),str(element["cable_name"]))
     if mp.contains(analyzer["vertices"], country_origin):
