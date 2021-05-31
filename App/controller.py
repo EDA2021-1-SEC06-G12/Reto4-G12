@@ -29,7 +29,7 @@ from DISClib.ADT import list as lt
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
-assert config
+assert cf
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -50,13 +50,30 @@ def init():
 #  de datos en los modelos
 # ___________________________________________________
 
-def cargar_paises(analyzer):
-    countriesfile = cf.data_dir + countries
-    input_file = csv.DictReader(open(servicesfile, encoding="utf-8"),
+def cargar(analyzer):
+    
+    landingpointsfile = cf.data_dir + "landing_points.csv"
+    input_file = csv.DictReader(open(landingpointsfile, encoding="utf-8"),
+                                delimiter=",")
+    for point in input_file:
+        model.addLandingPoint(analyzer,point)
+
+    connectionsfile = cf.data_dir + "connections.csv"
+    input_file = csv.DictReader(open(connectionsfile, encoding="utf-8"),
+                                delimiter=",")
+    for connection in input_file:
+        model.addLP_cable(analyzer, connection)
+    
+    countriesfile = cf.data_dir + "countries.csv"
+    input_file = csv.DictReader(open(countriesfile, encoding="utf-8"),
                                 delimiter=",")
     for country in input_file:
         mp.put(analyzer["countries"],country["CountryName"],country)
+        model.addCapital_V_E(analyzer,country)
+    
+    model.edges_same_country(analyzer)
 
+    
 # Funciones para la carga de datos
 
 # Funciones de ordenamiento

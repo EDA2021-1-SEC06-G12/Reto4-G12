@@ -21,6 +21,7 @@
  """
 
 import config
+import controller
 from DISClib.ADT.graph import gr
 from DISClib.ADT import map as mp
 from DISClib.ADT import list as lt
@@ -42,8 +43,6 @@ def printMenu():
     print("1- Cargar información en el catálogo")
 
 
-catalog = None
-
 """
 Menu principal
 """
@@ -55,7 +54,7 @@ while True:
         analyzer = controller.init()
 
     elif int(inputs[0]) == 2:
-        pass
+        controller.cargar(analyzer)
 
     else:
         sys.exit(0)
