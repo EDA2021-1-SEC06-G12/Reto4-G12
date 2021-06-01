@@ -58,11 +58,12 @@ def cargar(analyzer):
     for point in input_file:
         model.addLandingPoint(analyzer,point)
 
+
     connectionsfile = cf.data_dir + "connections.csv"
-    input_file = csv.DictReader(open(connectionsfile, encoding="utf-8"),
-                                delimiter=",")
+    input_file = csv.DictReader(open(connectionsfile, encoding="utf-8"),delimiter=",")
     for connection in input_file:
         model.addLP_cable(analyzer, connection)
+    
     
     countriesfile = cf.data_dir + "countries.csv"
     input_file = csv.DictReader(open(countriesfile, encoding="utf-8"),

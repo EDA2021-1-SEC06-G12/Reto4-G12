@@ -34,6 +34,7 @@ from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Sorting import mergesort as mrge
 assert cf
 
 """
@@ -60,6 +61,7 @@ def newAnalyzer():
                     "landing_points":None,
                     'connections': None,
                     'components': None,
+                    'id_dado_lp': None,
                     'paths': None,
                     "identificadores":None
                     }
@@ -71,6 +73,9 @@ def newAnalyzer():
                                      maptype='PROBING')
         
         analyzer["id_dado_lp"] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
+
+        analyzer["location_dado_id"] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
         
         analyzer['vertices'] = mp.newMap(loadfactor=0.5,
@@ -98,22 +103,25 @@ def addLandingPoint(analyzer,point):
     if len(lista) > 1:
         city = lista[0]
         country = lista[1]
-        mp.put(analyzer["landing_points_country"],point["id"],country)
-        mp.put(analyzer["id_dado_lp"], city, point["id"])
+        mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),country)
+        mp.put(analyzer["id_dado_lp"],city, str(point["landing_point_id"]))
+        mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
     else:
-        None
+        mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),lista[0])
+        mp.put(analyzer["id_dado_lp"],lista[0], str(point["landing_point_id"]))
+        mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
 
     
 
 def addLP_cable(analyzer,element):
     graph = analyzer["connections"]
   
-    id_origin = element["\ufefforigin"]
-    country_origin = mp.get(analyzer["landing_points_country"], id_origin)
+    id_origin = str(element["\ufefforigin"])
+    country_origin = mp.get(analyzer["landing_points_country"], id_origin)["value"]
 
     LP_cable_origin = (str(element["\ufefforigin"]),str(element["cable_name"]))
     if mp.contains(analyzer["vertices"], country_origin):
-        lista = mp.get(analyzer["vertices"], country_origin)
+        lista = mp.get(analyzer["vertices"], country_origin)["value"]
         entry = entryvert(LP_cable_origin,element)
         lt.addLast(lista,entry)
     else:
@@ -122,11 +130,12 @@ def addLP_cable(analyzer,element):
         entry = entryvert(LP_cable_origin,element)
         lt.addLast(lista, entry)
 
-    id_destination = element["destination"]
-    country_destination = mp.get(analyzer["landing_points_country"], id_destination)
+    id_destination = str(element["destination"])
+    country_destination = mp.get(analyzer["landing_points_country"], id_destination)["value"]
+    
     LP_cable_destination = (str(element["destination"]),str(element["cable_name"]))
     if mp.contains(analyzer["vertices"], country_destination):
-        lista = mp.get(analyzer["vertices"], country_destination)
+        lista = mp.get(analyzer["vertices"], country_destination)["value"]
         entry = entryvert(LP_cable_destination,element)
         lt.addLast(lista,entry)
     else:
@@ -162,9 +171,9 @@ def addCapital_V_E(analyzer,element):
     graph = analyzer["connections"]
     country = element["CountryName"].lower()
     city = element["CapitalName"].lower()
-    lista_capitales_paises_sin_landingpoints = lt.newList(datastructure="ARRAY_LIST")
     
-    mp.put(analyzer["countries"], country,element )
+    
+    mp.put(analyzer["countries"], country,element)
 
     if not gr.containsVertex(graph,(city,0)):
         gr.insertVertex(graph,(city,0))
@@ -174,59 +183,76 @@ def addCapital_V_E(analyzer,element):
         i=it.newIterator(lista)
         while it.hasNext(i):
             lp_cable=(it.next(i))
-            edge_identifier = (lp_cable,city)
+
+            info_lp_cable = lp_cable["info"]
+            tuple_place_cablename = lp_cable["LP_cable"]
+            id_place = tuple_place_cablename[0]
+            location = mp.get(analyzer["location_dado_id"],id_place)["value"]
+            edge_identifier = (lp_cable["LP_cable"],(city,0))
 
             cost = {"distance":None,"capacity":None}
-            cost["distance"] = float(hs.haversine((lp_cable[1]["latitude"],lp_cable[1]["longitude"]),(element["latitude"],element["longitude"])))
-            cost["capacity"] = lp_cable[1]["capacityTBPS"]
-
+            cost["distance"] = float(hs.haversine(location,(float(element["CapitalLatitude"]),float(element["CapitalLongitude"]))))
+            cost["capacity"] = float(info_lp_cable["capacityTBPS"])
+        
             mp.put(analyzer["edges"],edge_identifier,cost)
 
-            gr.addEdge(graph, lp_cable, city, cost)
+            gr.addEdge(graph, tuple_place_cablename, (city,0), cost)
     else:
-        lt.addLast(lista_capitales_paises_sin_landingpoints, (city,element))
+        None
 
-    sinMar(analyzer,lista_capitales_paises_sin_landingpoints)
+    sinMar(analyzer,country,city)
    
+def sinMar(analyzer,country,city):
+    info = mp.get(analyzer["countries"], country)["value"]
+    location = (float(info["CapitalLatitude"]),float(info["CapitalLongitude"]))
+    lista3 = mp.keySet(analyzer["vertices"])
 
-def edges_same_country(analyzer):
-    lista = mp.keySet(analyzer["vertices"])
-    i=it.newIterator(lista)
-    while it.hasNext(i):
-        country=(it.next(i))
+    lista_final = lt.newList(datastructure="ARRAY_LIST")
+    i=1
+    while i<=lt.size(lista3):
+        country=lt.getElement(lista3, i)
         lista2 = mp.get(analyzer["vertices"],country)["value"]
         ii = 1
         while ii<=lt.size(lista2):
-            lp1 = lt.getElement(lista2, ii)[1]
+    
+            lp_name = lt.getElement(lista2, ii)["LP_cable"]
+            lp = lt.getElement(lista2, ii)["info"]
+            location_lp = mp.get(analyzer["location_dado_id"], lp_name[0])["value"]
+            capacity = float(lp["capacityTBPS"])
+            distance = hs.haversine(location_lp, location)
+            lt.addLast(lista_final, (lp_name,distance,capacity))
+            ii += 1
+        i+=1
+        
+    lista_sorteada = mrge.sort(lista_final,cmpSinMar)
+    tupla = lt.getElement(lista_sorteada, 1)
+    cost = {"distance":tupla[1],"capacity":float(tupla[2])}
+    gr.addEdge(analyzer["connections"], tupla[0], (city,0), cost)
+
+def edges_same_country(analyzer):
+    lista = mp.keySet(analyzer["vertices"])
+    i=1
+    while i<=lt.size(lista):
+        country=lt.getElement(lista, i)
+        lista2 = mp.get(analyzer["vertices"],country)["value"]
+        ii = 1
+        while ii<=lt.size(lista2):
+            lp1 = lt.getElement(lista2, ii)
+            lp1_name = lp1["LP_cable"]
             e = lt.size(lista2)-ii
             while e<=lt.size(lista2):
-                lp2 = lt.getElement(lista2, e)[1]
+                lp2 = lt.getElement(lista2, e)
+                lp2_name = lp2["LP_cable"]
                 cost = {"distance":None,"capacity":None}
                 cost["distance"] = float(0.1)
-                cost["capacity"] = min(float(lp1["capacityTBPS"]),float(lp2["capacityTBPS"]))
-                gr.addEdge(analyzer["connections"], lp1, lp2, cost)
+                cost["capacity"] = min(float(lp1["info"]["capacityTBPS"]),float(lp2["info"]["capacityTBPS"]))
+                mp.put(analyzer["edges"],(lp1_name,lp2_name),cost)
+                gr.addEdge(analyzer["connections"], lp1_name, lp2_name, cost)
+                e +=1    
+            ii+=1
+        i += 1
 
 
-def sinMar(analyzer,lista):
-    i = it.newIterator(lista)
-    while it.hasNext(i):
-        element = it.next(i)
-        city = element[0]
-        info = element[1]
-        location = (element["latitude"],element["longitude"])
-        
-        lista3 = mp.keySet(analyzer["vertices"])
-        i=it.newIterator(lista3)
-        
-        while it.hasNext(i):
-            country=(it.next(i))
-            lista2 = mp.get(analyzer["vertices"],country)["value"]
-            ii = 1
-            while ii<=lt.size(lista2):
-                lp = lt.getElement(lista2, ii)["info"]
-                location
-
-                ii += 1
 
 
 
@@ -253,6 +279,9 @@ def compareLPs(LP1, LP2):
         return 1
     else:
         return -1
+
+def cmpSinMar(tupla1,tupla2):
+    return(float(tupla1[1])>=float(tupla2[1]))
 
 
 def r1(analyzer):
