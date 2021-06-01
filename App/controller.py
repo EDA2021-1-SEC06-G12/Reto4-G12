@@ -79,3 +79,13 @@ def cargar(analyzer):
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+
+def req1(analyzer,lp1,lp2):
+    num1=model.iddadolp(analyzer,lp1)
+    num2=model.iddadolp(analyzer,lp2)
+    if num1==None or num2==None:
+        return None
+    else:
+        x=model.req1(analyzer,num1,num2)
+        return x
+    
