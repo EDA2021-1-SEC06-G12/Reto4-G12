@@ -42,7 +42,8 @@ operación solicitada
 
 def printMenu():
     print("Bienvenido")
-    print("1- Cargar información en el catálogo")
+    print("1 - Cargar información en el catálogo")
+    print('2 - Hallar cantidad de clústeres dentro de la red de cables submarinos y averiguar si dos landing points al mismo clúster.')
 
 
 """
@@ -57,12 +58,19 @@ while True:
         controller.cargar(analyzer)
 
     elif int(inputs[0]) == 2:
-        landingpoint1=input('Ingrese el primer landing point de interés: ')
-        landingpoint2=input('Ingrese el segundo landing point de interés: ')
-        num1=(mp.get(analyzer[''],landingpoint1))['value']
-        num2=(mp.get(analyzer[''],landingpoint2))['value']
-        x=model.req1(analyzer,num1,num2)
-        print(x)       
+        lp1=input('Ingrese el primer landing point de interés: ')
+        lp2=input('Ingrese el segundo landing point de interés: ')
+        x=controller.req1(analyzer,lp1.lower(),lp2.lower())
+        if x!=None:
+            print('\nHay un total de '+str(x[1])+' clusters en la red.\n')
+            if x[0]==True:
+                print(lp1.capitalize()+' y '+lp2.capitalize()+' están en el mismo cluster.\n')
+            else:
+                print(lp1.capitalize()+' y '+lp2.capitalize()+' no están en el mismo cluster.\n')
+        else:
+            print('\nNo hay información para los landing points ingresados.\n')
+        input('Ingrese enter para continuar.')
+        
 
     else:
         sys.exit(0)

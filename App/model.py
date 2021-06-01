@@ -88,6 +88,7 @@ def newAnalyzer():
         analyzer['connections'] = gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
                                               size=14000, comparefunction=compareLPs)
+        
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
@@ -285,8 +286,9 @@ def cmpSinMar(tupla1,tupla2):
 
 
 def r1(analyzer):
-    newmap=mp.newMap()
     x=scc.KosarajuSCC(analyzer['connections'])
+    n=scc.connectedComponents(x)
+    newmap=mp.newMap()
     mapa=x['idscc']
     keys=mp.keySet(mapa)
     i=1
@@ -303,20 +305,35 @@ def r1(analyzer):
                 mp.put(mmap,value,None)
                 mp.put(newmap,key[0],mmap)
             i+=1
-    return newmap
+    
+    return newmap,n
 
 def req1(analyzer,num1,num2):
-    mapa=r1(analyzer)
-    val1=mp.get(mapa,num1)['value']
-    val2=mp.get(mapa,num2)['value']
-    nums=mp.keySet(val1)
-    i=1
-    final=False
-    centinela=True
-    while i<=lt.size(nums) and centinela:
-        num=lt.getElement(nums,i)
-        if mp.contains(val2,num):
-            centinela==False
-            final=True
-        i+=1
-    return final
+    x=r1(analyzer)
+    mapa=x[0]
+    n=x[1]
+    par1=mp.get(mapa,num1)
+    par2=mp.get(mapa,num2)
+    if par1==None or par2==None:
+        return None
+    else:
+        val1=par1['value']
+        val2=par2['value']
+        nums=mp.keySet(val1)
+        i=1
+        final=False
+        centinela=True
+        while i<=lt.size(nums) and centinela:
+            num=lt.getElement(nums,i)
+            if mp.contains(val2,num):
+                centinela==False
+                final=True
+            i+=1
+        return final,n
+
+def iddadolp(analyzer,lp):
+    ide=(mp.get(analyzer['id_dado_lp'],lp))
+    if ide!=None:
+        return ide['value']
+    else:
+        return None
