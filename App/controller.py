@@ -89,6 +89,7 @@ def req1(analyzer,lp1,lp2):
     else:
         x=model.req1(analyzer,num1,num2)
         return x
+        
 def req2(analyzer,pais1,pais2):
     capital1=model.capital(pais1)
     capital2=model.capital(pais2)
