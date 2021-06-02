@@ -34,6 +34,7 @@ from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Algorithms.Sorting import mergesort as mrge
 assert cf
 
@@ -284,7 +285,7 @@ def compareLPs(LP1, LP2):
 def cmpSinMar(tupla1,tupla2):
     return(float(tupla1[1])>=float(tupla2[1]))
 
-
+##Requerimientos
 def r1(analyzer):
     x=scc.KosarajuSCC(analyzer['connections'])
     n=scc.connectedComponents(x)
@@ -337,3 +338,26 @@ def iddadolp(analyzer,lp):
         return ide['value']
     else:
         return None
+
+def capital(analyzer,pais):
+    mapa=analyzer['countries']
+    par=(mp.get(mapa,pais))
+    if par==None:
+        return None
+    else:
+        element=me.getValue(par)
+        capital=element['CapitalName']
+        return capital
+
+def distpath(analyzer,capital1,capital2):
+    camino=lt.newList()
+    estructura=djk.Dijkstra(analyzer['connections'],(capital1,0))
+    distancia=djk.distTo(estructura,(capital2,0))
+    path=djk.pathTo(estructura,(capital2,0))
+    i=1
+    while i<=lt.size(path):
+        vert=lt.getElement(path,i)
+        dist=djk.distTo(estructura,vert)
+        lt.addLast((vert,dist))
+        i+=1
+    return distancia,camino
