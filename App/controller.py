@@ -140,3 +140,38 @@ def req1(analyzer,lp1,lp2):
     
 def cmpaux(tupla1,tupla2):
     return(float(tupla1[0])>=float(tupla2[0]))
+        
+def req3(analyzer,pais1,pais2):
+    capital1=model.capital(pais1)
+    capital2=model.capital(pais2)
+    if capital1==None or capital2==None:
+        print('No hay información para los países dados.')
+    else:
+        distpath=model.distpath(capital1,capital2)
+        distancia=distpath[0]
+        print('La distancia total de la ruta es de: '+str(distancia)+' km.')
+        path=distpath[1]
+        anterior=''
+        actual=''
+        dactual=0
+        danterior=0
+        i=1
+        print('\nLa ruta está dada por: ')
+        while i<=lt.size(path):
+            dupla=lt.getElement(path,i)
+            if i==1:
+                actual=dupla[0]
+                dactual=dupla[1]
+                print(capital1+'-> '+actual+':'+str(dactual)+' km.')
+            else:
+                anterior=actual
+                danterior=dactual
+                actual=dupla[0]
+                dactual=dupla[1]
+                d=dactual-danterior
+                print(anterior+'->'+actual+': '+str(d)+' km.')
+                
+
+
+        return distancia
+           
