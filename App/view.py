@@ -88,6 +88,9 @@ while True:
         pais1=input('Ingrese el primer país de interés: ')
         pais2=input('Ingrese el segundo país de interés: ')
         controller.req3(analyzer,pais1,pais2)
+    
+    elif int(inputs[0]) == 5: 
+        controller.req4(analyzer)
 
     else:
         sys.exit(0)

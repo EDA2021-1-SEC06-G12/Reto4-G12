@@ -196,6 +196,13 @@ def req3(analyzer,pais1,pais2):
         
         return distancia
            
+def req4(analyzer):
+    x = model.req4(analyzer)
+
+
+
+
+
 
 def cmpaux(tupla1,tupla2):
     return(float(tupla1[0])>=float(tupla2[0]))

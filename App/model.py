@@ -35,6 +35,7 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
+from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.Algorithms.Sorting import mergesort as mrge
 assert cf
 
@@ -452,3 +453,14 @@ def distpath(analyzer,capital1,capital2):
     distancia=djk.distTo(estructura,(capital2,0))
     path=djk.pathTo(estructura,(capital2,0))
     return distancia,path
+
+def req4(analyzer):
+    """
+    nada de esto funciona ni se que hace
+    """
+    estructura = pr.PrimMST(analyzer["connections_distance"])
+    costo_total = pr.weightMST(analyzer["connections_distance"], estructura)
+    print(costo_total)
+    print(estructura["pq"])
+    print("")
+    print(estructura["mst"])
