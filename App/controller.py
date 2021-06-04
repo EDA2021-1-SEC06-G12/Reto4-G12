@@ -25,6 +25,7 @@ import model
 import csv
 from DISClib.ADT.graph import gr
 from DISClib.ADT import map as mp
+from DISClib.ADT import stack as st
 from DISClib.Algorithms.Sorting import mergesort as mrge
 from DISClib.ADT import list as lt
 from DISClib.Algorithms.Graphs import scc
@@ -106,8 +107,12 @@ def cargar(analyzer):
                                 delimiter=",")
     for country in input_file:
         model.addCountry(analyzer,country)
-    for country in input_file:
-        model.addCapital_V_E(analyzer,country)
+
+    countriesfile2 = cf.data_dir + "countries.csv"
+    input_file = csv.DictReader(open(countriesfile2, encoding="utf-8"),
+                                delimiter=",")
+    for country2 in input_file:
+        model.addCapital_V_E(analyzer,country2)
     
     model.edges_same_lp(analyzer)
     
@@ -121,7 +126,11 @@ def cargar(analyzer):
     num_conexiones = gr.numEdges(analyzer["connections_distance"])
     num_paises = mp.size(analyzer["countries"])
 
-
+    """
+    print(lt.subList(gr.vertices(analyzer["connections_distance"]), 1, 20))
+    print(mp.get(analyzer["name_dado_id"], "4862")["value"])
+    print(gr.adjacents(analyzer["connections_distance"], ('4862', 'Dunant')))
+    """
     return num_lps,num_conexiones,num_paises
     
 # Funciones para la carga de datos
@@ -144,37 +153,47 @@ def req2(analyzer):
     return lista
         
 def req3(analyzer,pais1,pais2):
-    capital1=model.capital(pais1)
-    capital2=model.capital(pais2)
+    capital1=model.capital(analyzer,pais1.lower())
+    capital2=model.capital(analyzer,pais2.lower())
     if capital1==None or capital2==None:
         print('No hay información para los países dados.')
     else:
-        distpath=model.distpath(capital1,capital2)
+        distpath=model.distpath(analyzer,capital1,capital2)
         distancia=distpath[0]
+        path = distpath[1]
+        print(path)
         print('La distancia total de la ruta es de: '+str(distancia)+' km.')
-        path=distpath[1]
-        anterior=''
-        actual=''
-        dactual=0
-        danterior=0
-        i=1
+        print("")
         print('\nLa ruta está dada por: ')
-        while i<=lt.size(path):
-            dupla=lt.getElement(path,i)
-            if i==1:
-                actual=dupla[0]
-                dactual=dupla[1]
-                print(capital1+'-> '+actual+':'+str(dactual)+' km.')
+        
+        i = 1
+        inicial = st.size(path)
+        while i<=inicial:
+            sub = st.pop(path)
+            if i == 1:
+                vertexA = sub["vertexA"][0] + str(" " + str(pais1))
+                cableA = "CAPITAL"
             else:
-                anterior=actual
-                danterior=dactual
-                actual=dupla[0]
-                dactual=dupla[1]
-                d=dactual-danterior
-                print(anterior+'->'+actual+': '+str(d)+' km.')
-                
+                place = mp.get(analyzer["name_dado_id"], sub["vertexA"][0])
+                if place != None:
+                    vertexA = place["value"]
+                    cableA = str(sub["vertexA"][1])
+                else:
+                    vertexA = sub["vertexA"][0] 
+                    cableA = "CAPITAL"
+            
+            place = mp.get(analyzer["name_dado_id"], sub["vertexB"][0])
+            if place != None:
+                vertexB = place["value"]
+                cableB = str(sub["vertexB"][1])
+            else:
+                vertexB = sub["vertexB"][0].upper() 
+                cableB = "CAPITAL"
 
-
+            print("---------------------")
+            print(str(i) + ") ACTUAL: " + str(vertexA) +" |CABLE: "+ cableA  + " -> SIGUIENTE: " + str(vertexB) +" |CABLE: "+ cableB + str(" | DISTANCIA (KM): ") +str(sub["weight"]))
+            i += 1
+        
         return distancia
            
 

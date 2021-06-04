@@ -114,7 +114,7 @@ def newAnalyzer():
 
 # Funciones para agregar informacion al grafo
 def addCountry(analyzer,country):
-    mp.put(analyzer["countries"],country["CountryName"],country)
+    mp.put(analyzer["countries"],country["CountryName"].lower(),country)
 
 def addLandingPoint(analyzer,point):
     mp.put(analyzer["landing_points"],point["landing_point_id"],point)
@@ -222,7 +222,6 @@ def addCapital_V_E(analyzer,element):
 
     country = element["CountryName"].lower()
     city = element["CapitalName"].lower()
-
     
     if not gr.containsVertex(graph_distance,(city,0)):
         gr.insertVertex(graph_distance,(city,0))
@@ -233,9 +232,9 @@ def addCapital_V_E(analyzer,element):
     if mp.get(analyzer["vertices"],country) != None:
         mapa = mp.get(analyzer["vertices"],country)["value"]
         lista = mp.keySet(mapa)
-        i=it.newIterator(lista)
-        while it.hasNext(i):
-            lp_cable=(it.next(i))
+        i=1
+        while i <= lt.size(lista):
+            lp_cable=lt.getElement(lista, i)
 
             info_lp_cable = mp.get(mapa, lp_cable)["value"]
             tuple_place_cablename = lp_cable
@@ -251,6 +250,8 @@ def addCapital_V_E(analyzer,element):
 
             gr.addEdge(graph_distance, tuple_place_cablename, (city,0), cost["distance"])
             gr.addEdge(graph_capacity, tuple_place_cablename, (city,0), cost["capacity"])
+
+            i+=1
     else:
         sinMar(analyzer,country,city)
 
@@ -282,6 +283,8 @@ def sinMar(analyzer,country,city):
     lista_sorteada = mrge.sort(lista_final,cmpSinMar)
     tupla = lt.getElement(lista_sorteada, 1)
     cost = {"distance":tupla[1],"capacity":float(tupla[2])}
+    edge_identifier = (tupla[0],(city,0))
+    mp.put(analyzer["edges"],edge_identifier,cost)
     gr.addEdge(analyzer["connections_distance"], tupla[0], (city,0), cost["distance"])
     gr.addEdge(analyzer["connections_capacity"], tupla[0], (city,0), cost["capacity"])
 
@@ -308,8 +311,7 @@ def edges_same_lp(analyzer):
                 lt.addLast(listaaux,lp1_all)
             ii += 1
         i +=1
-    """
-    print(mp.get(mapa_landingpoints, "4554"))"""
+    
     add_edges_same_lp(analyzer,mapa_landingpoints)
 
 def add_edges_same_lp(analyzer,mapa):
@@ -371,31 +373,9 @@ def compareLPs(LP1, LP2):
         return -1
 
 def cmpSinMar(tupla1,tupla2):
-    return(float(tupla1[1])>=float(tupla2[1]))
+    return(float(tupla1[1])<=float(tupla2[1]))
 
 ##Requerimientos
-def r1(analyzer):
-    x=scc.KosarajuSCC(analyzer['connections'])
-    n=scc.connectedComponents(x)
-    newmap=mp.newMap()
-    mapa=x['idscc']
-    keys=mp.keySet(mapa)
-    i=1
-    while i<=lt.size(keys): 
-        key=lt.getElement(keys,i)
-        if key!=None:
-            value=mp.get(mapa,key)['value']
-            par=mp.get(newmap,key[0])
-            if par!=None:
-                mmap=me.getValue(par)
-                mp.put(mmap,value,None)
-            else:
-                mmap=mp.newMap()
-                mp.put(mmap,value,None)
-                mp.put(newmap,key[0],mmap)
-            i+=1
-    
-    return newmap,n
 
 def req1(analyzer,lpId_1,lpId_2):
     estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
@@ -417,30 +397,7 @@ def req1(analyzer,lpId_1,lpId_2):
         i += 1
 
     return num_clusteres,False
-"""
-def req1(analyzer,num1,num2):
-    x=r1(analyzer)
-    mapa=x[0]
-    n=x[1]
-    par1=mp.get(mapa,num1)
-    par2=mp.get(mapa,num2)
-    if par1==None or par2==None:
-        return None
-    else:
-        val1=par1['value']
-        val2=par2['value']
-        nums=mp.keySet(val1)
-        i=1
-        final=False
-        centinela=True
-        while i<=lt.size(nums) and centinela:
-            num=lt.getElement(nums,i)
-            if mp.contains(val2,num):
-                centinela==False
-                final=True
-            i+=1
-        return final,n
-"""
+
 def iddadolp(analyzer,lp):
     ide=(mp.get(analyzer['id_dado_lp'],lp))
     if ide!=None:
@@ -485,18 +442,13 @@ def capital(analyzer,pais):
         return None
     else:
         element=me.getValue(par)
-        capital=element['CapitalName']
+        capital=element['CapitalName'].lower()
         return capital
 
 def distpath(analyzer,capital1,capital2):
     camino=lt.newList()
-    estructura=djk.Dijkstra(analyzer['connections'],(capital1,0))
+    print(capital1)
+    estructura=djk.Dijkstra(analyzer['connections_distance'],(capital1,0))
     distancia=djk.distTo(estructura,(capital2,0))
     path=djk.pathTo(estructura,(capital2,0))
-    i=1
-    while i<=lt.size(path):
-        vert=lt.getElement(path,i)
-        dist=djk.distTo(estructura,vert)
-        lt.addLast((vert,dist))
-        i+=1
-    return distancia,camino
+    return distancia,path

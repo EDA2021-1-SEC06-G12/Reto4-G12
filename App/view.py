@@ -87,7 +87,7 @@ while True:
     elif int(inputs[0]) == 4:
         pais1=input('Ingrese el primer país de interés: ')
         pais2=input('Ingrese el segundo país de interés: ')
-        controller.req2(analyzer,pais1.lower(),pais2.lower())
+        controller.req3(analyzer,pais1,pais2)
 
     else:
         sys.exit(0)
