@@ -59,7 +59,8 @@ def newAnalyzer():
         analyzer = {
                     'countries': None,
                     "landing_points":None,
-                    'connections': None,
+                    'connections_distance': None,
+                    'connections_capacity': None,
                     'components': None,
                     'id_dado_lp': None,
                     'paths': None,
@@ -77,17 +78,31 @@ def newAnalyzer():
 
         analyzer["location_dado_id"] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
+       
+        analyzer["name_dado_id"] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
+
+        analyzer["landing_points"] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
+
         
         analyzer['vertices'] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
+        
+        analyzer['vertices_aux'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
 
         analyzer["edges"] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
 
 
-        analyzer['connections'] = gr.newGraph(datastructure='ADJ_LIST',
+        analyzer['connections_distance'] = gr.newGraph(datastructure='ADJ_LIST',
                                               directed=False,
-                                              size=14000, comparefunction=compareLPs)
+                                              size=14000, comparefunction=None)
+        
+        analyzer['connections_capacity'] = gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=False,
+                                              size=14000, comparefunction=None)
         
         return analyzer
     except Exception as exp:
@@ -95,10 +110,12 @@ def newAnalyzer():
 
 
 # Funciones para agregar informacion al grafo
-
-
+def addCountry(analyzer,country):
+    mp.put(analyzer["countries"],country["CountryName"],country)
 
 def addLandingPoint(analyzer,point):
+    mp.put(analyzer["landing_points"],point["landing_point_id"],point)
+
     cityandcountry = point["name"]
     lista=(cityandcountry.lower()).split(', ')
     if len(lista) > 1:
@@ -107,54 +124,64 @@ def addLandingPoint(analyzer,point):
         mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),country)
         mp.put(analyzer["id_dado_lp"],city, str(point["landing_point_id"]))
         mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
+        mp.put(analyzer["name_dado_id"], str(point["landing_point_id"]), cityandcountry)
     else:
         mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),lista[0])
         mp.put(analyzer["id_dado_lp"],lista[0], str(point["landing_point_id"]))
         mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
+        mp.put(analyzer["name_dado_id"], str(point["landing_point_id"]), cityandcountry)
 
     
 
 def addLP_cable(analyzer,element):
-    graph = analyzer["connections"]
+    graph_distance = analyzer["connections_distance"]
+    graph_capacity = analyzer["connections_capacity"]
   
     id_origin = str(element["\ufefforigin"])
     country_origin = mp.get(analyzer["landing_points_country"], id_origin)["value"]
 
     LP_cable_origin = (str(element["\ufefforigin"]),str(element["cable_name"]))
     if mp.contains(analyzer["vertices"], country_origin):
-        lista = mp.get(analyzer["vertices"], country_origin)["value"]
-        entry = entryvert(LP_cable_origin,element)
-        lt.addLast(lista,entry)
+        mapa_aux = mp.get(analyzer["vertices"], country_origin)["value"]
+        mp.put(mapa_aux,LP_cable_origin,element)
     else:
-        lista = lt.newList(datastructure="ARRAY_LIST")
-        mp.put(analyzer["vertices"],country_origin,lista)
-        entry = entryvert(LP_cable_origin,element)
-        lt.addLast(lista, entry)
+        mapa_aux = mp.newMap()
+        mp.put(analyzer["vertices"],country_origin,mapa_aux)
+        mp.put(mapa_aux, LP_cable_origin, element)
 
     id_destination = str(element["destination"])
     country_destination = mp.get(analyzer["landing_points_country"], id_destination)["value"]
     
     LP_cable_destination = (str(element["destination"]),str(element["cable_name"]))
     if mp.contains(analyzer["vertices"], country_destination):
-        lista = mp.get(analyzer["vertices"], country_destination)["value"]
-        entry = entryvert(LP_cable_destination,element)
-        lt.addLast(lista,entry)
+        mapa_aux = mp.get(analyzer["vertices"], country_destination)["value"]
+        mp.put(mapa_aux,LP_cable_destination,element)
     else:
-        lista = lt.newList(datastructure="ARRAY_LIST")
-        mp.put(analyzer["vertices"],country_destination,lista)
-        entry = entryvert(LP_cable_destination,element)
-        lt.addLast(lista, entry)
+        mapa_aux = mp.newMap()
+        mp.put(analyzer["vertices"],country_destination,mapa_aux)
+        mp.put(mapa_aux, LP_cable_destination, element)
 
-    if not gr.containsVertex(graph, LP_cable_origin):
-        gr.insertVertex(graph, LP_cable_origin)
+    if not gr.containsVertex(graph_distance, LP_cable_origin) and not mp.contains(analyzer["vertices_aux"], LP_cable_origin):
+        gr.insertVertex(graph_distance, LP_cable_origin)
     
-    if not gr.containsVertex(graph, LP_cable_destination):
-        gr.insertVertex(graph, LP_cable_destination)
+    if not gr.containsVertex(graph_distance, LP_cable_destination)and not mp.contains(analyzer["vertices_aux"], LP_cable_destination):
+        gr.insertVertex(graph_distance, LP_cable_destination)
     
+    if not gr.containsVertex(graph_capacity, LP_cable_origin) and not mp.contains(analyzer["vertices_aux"], LP_cable_origin):
+        gr.insertVertex(graph_capacity, LP_cable_origin)
+    
+    if not gr.containsVertex(graph_capacity, LP_cable_destination)and not mp.contains(analyzer["vertices_aux"], LP_cable_destination):
+        gr.insertVertex(graph_capacity, LP_cable_destination)
+
+    mp.put(analyzer["vertices_aux"],LP_cable_destination,None)
+    mp.put(analyzer["vertices_aux"],LP_cable_origin,None)
+
     addLP_cable_Edges(analyzer,LP_cable_origin,LP_cable_destination,element)
 
 def addLP_cable_Edges(analyzer,origin,destination,element):
-    graph = analyzer["connections"]
+    graph_distance = analyzer["connections_distance"]
+    graph_capacity = analyzer["connections_capacity"]
+
     splitted = element["cable_length"].split(" ", 1)
     if splitted[0] != "n.a.":
         distance = float(splitted[0].replace(",",""))
@@ -165,31 +192,37 @@ def addLP_cable_Edges(analyzer,origin,destination,element):
 
     edge_identifier = (origin,destination)
     mp.put(analyzer["edges"],edge_identifier,cost)
-    gr.addEdge(graph, origin, destination, cost)
+    gr.addEdge(graph_distance, origin, destination, cost["distance"])
+    gr.addEdge(graph_capacity, origin, destination, cost["capacity"])
+
 
 def addCapital_V_E(analyzer,element):
     
-    graph = analyzer["connections"]
+    graph_distance = analyzer["connections_distance"]
+    graph_capacity = analyzer["connections_capacity"]
+
     country = element["CountryName"].lower()
     city = element["CapitalName"].lower()
-    
-    
-    mp.put(analyzer["countries"], country,element)
 
-    if not gr.containsVertex(graph,(city,0)):
-        gr.insertVertex(graph,(city,0))
+    
+    if not gr.containsVertex(graph_distance,(city,0)):
+        gr.insertVertex(graph_distance,(city,0))
+    
+    if not gr.containsVertex(graph_capacity,(city,0)):
+        gr.insertVertex(graph_capacity,(city,0))
 
     if mp.get(analyzer["vertices"],country) != None:
-        lista = mp.get(analyzer["vertices"],country)["value"]
+        mapa = mp.get(analyzer["vertices"],country)["value"]
+        lista = mp.keySet(mapa)
         i=it.newIterator(lista)
         while it.hasNext(i):
             lp_cable=(it.next(i))
 
-            info_lp_cable = lp_cable["info"]
-            tuple_place_cablename = lp_cable["LP_cable"]
+            info_lp_cable = mp.get(mapa, lp_cable)["value"]
+            tuple_place_cablename = lp_cable
             id_place = tuple_place_cablename[0]
             location = mp.get(analyzer["location_dado_id"],id_place)["value"]
-            edge_identifier = (lp_cable["LP_cable"],(city,0))
+            edge_identifier = (tuple_place_cablename,(city,0))
 
             cost = {"distance":None,"capacity":None}
             cost["distance"] = float(hs.haversine(location,(float(element["CapitalLatitude"]),float(element["CapitalLongitude"]))))
@@ -197,11 +230,13 @@ def addCapital_V_E(analyzer,element):
         
             mp.put(analyzer["edges"],edge_identifier,cost)
 
-            gr.addEdge(graph, tuple_place_cablename, (city,0), cost)
+            gr.addEdge(graph_distance, tuple_place_cablename, (city,0), cost["distance"])
+            gr.addEdge(graph_capacity, tuple_place_cablename, (city,0), cost["capacity"])
     else:
-        None
+        sinMar(analyzer,country,city)
 
-    sinMar(analyzer,country,city)
+    
+
    
 def sinMar(analyzer,country,city):
     info = mp.get(analyzer["countries"], country)["value"]
@@ -212,12 +247,12 @@ def sinMar(analyzer,country,city):
     i=1
     while i<=lt.size(lista3):
         country=lt.getElement(lista3, i)
-        lista2 = mp.get(analyzer["vertices"],country)["value"]
+        mapa = mp.get(analyzer["vertices"],country)["value"]
+        lista2 = mp.keySet(mapa)
         ii = 1
         while ii<=lt.size(lista2):
-    
-            lp_name = lt.getElement(lista2, ii)["LP_cable"]
-            lp = lt.getElement(lista2, ii)["info"]
+            lp_name = lt.getElement(lista2, ii)
+            lp = mp.get(mapa, lp_name)["value"]
             location_lp = mp.get(analyzer["location_dado_id"], lp_name[0])["value"]
             capacity = float(lp["capacityTBPS"])
             distance = hs.haversine(location_lp, location)
@@ -228,30 +263,65 @@ def sinMar(analyzer,country,city):
     lista_sorteada = mrge.sort(lista_final,cmpSinMar)
     tupla = lt.getElement(lista_sorteada, 1)
     cost = {"distance":tupla[1],"capacity":float(tupla[2])}
-    gr.addEdge(analyzer["connections"], tupla[0], (city,0), cost)
+    gr.addEdge(analyzer["connections_distance"], tupla[0], (city,0), cost["distance"])
+    gr.addEdge(analyzer["connections_capacity"], tupla[0], (city,0), cost["capacity"])
 
-def edges_same_country(analyzer):
+def edges_same_lp(analyzer):
     lista = mp.keySet(analyzer["vertices"])
-    i=1
+    mapa_landingpoints = mp.newMap()
+    i = 1
     while i<=lt.size(lista):
-        country=lt.getElement(lista, i)
-        lista2 = mp.get(analyzer["vertices"],country)["value"]
+        country = lt.getElement(lista, i)
+        mapa = mp.get(analyzer["vertices"],country)["value"]
+        lista2 = mp.keySet(mapa)
         ii = 1
         while ii<=lt.size(lista2):
             lp1 = lt.getElement(lista2, ii)
+            lp1_all = entryvert(lp1, mp.get(mapa, lp1)["value"])
+            lp1_name = lp1
+            lp1_place = lp1_name[0]
+            if mp.contains(mapa_landingpoints, lp1_place):
+                listaaux = mp.get(mapa_landingpoints, lp1_place)["value"]
+                lt.addLast(listaaux,lp1_all)
+            else:
+                listaaux = lt.newList(datastructure="ARRAY_LIST")
+                mp.put(mapa_landingpoints,lp1_place,listaaux)
+                lt.addLast(listaaux,lp1_all)
+            ii += 1
+        i +=1
+    """
+    print(mp.get(mapa_landingpoints, "4554"))"""
+    add_edges_same_lp(analyzer,mapa_landingpoints)
+
+def add_edges_same_lp(analyzer,mapa):
+    lista = mp.keySet(mapa)
+
+    i = 1
+    while i<=lt.size(lista):
+        lp = lt.getElement(lista, i)
+        lista_vertices = mp.get(mapa, lp)["value"]
+
+        ii = 1
+        while ii<=lt.size(lista_vertices):
+            lp1 = lt.getElement(lista_vertices, ii)
             lp1_name = lp1["LP_cable"]
-            e = lt.size(lista2)-ii
-            while e<=lt.size(lista2):
-                lp2 = lt.getElement(lista2, e)
+            
+            e = ii+1
+            while e<=lt.size(lista_vertices):
+                lp2 = lt.getElement(lista_vertices, e)
                 lp2_name = lp2["LP_cable"]
                 cost = {"distance":None,"capacity":None}
                 cost["distance"] = float(0.1)
                 cost["capacity"] = min(float(lp1["info"]["capacityTBPS"]),float(lp2["info"]["capacityTBPS"]))
                 mp.put(analyzer["edges"],(lp1_name,lp2_name),cost)
-                gr.addEdge(analyzer["connections"], lp1_name, lp2_name, cost)
-                e +=1    
-            ii+=1
-        i += 1
+                gr.addEdge(analyzer["connections_distance"], lp1_name, lp2_name, cost["distance"])
+                gr.addEdge(analyzer["connections_capacity"], lp1_name, lp2_name, cost["capacity"])
+                e +=1
+
+            ii += 1   
+
+        i+=1
+            
 
 
 
@@ -337,3 +407,34 @@ def iddadolp(analyzer,lp):
         return ide['value']
     else:
         return None
+
+def req2(analyzer):
+    lista_vertices = gr.vertices(analyzer["connections_distance"])
+    final = lt.newList(datastructure="ARRAY_LIST")
+    i = 1
+    while i <=lt.size(lista_vertices):
+        elem = lt.getElement(lista_vertices, i)
+        if gr.degree(analyzer["connections_distance"], elem)>1 and elem[1] != 0:
+            lp_id = elem[0]
+            lp_name = mp.get(analyzer["name_dado_id"], lp_id)["value"]
+            lista_adyacentes = gr.adjacents(analyzer["connections_distance"], elem)
+            """
+            print("")
+            print(lista_adyacentes)
+            print("")
+            print(elem)
+            """
+            ii = 1
+            e = 0
+            while ii <= lt.size(lista_adyacentes):
+                adyacente = lt.getElement(lista_adyacentes, ii)
+                if adyacente[0] == lp_id:
+                    e += 1
+                ii+=1
+            if e >= 1:
+                lt.addLast(final, (lp_name,e+1))
+        i+=1
+    return final
+
+
+

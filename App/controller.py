@@ -25,6 +25,7 @@ import model
 import csv
 from DISClib.ADT.graph import gr
 from DISClib.ADT import map as mp
+from DISClib.Algorithms.Sorting import mergesort as mrge
 from DISClib.ADT import list as lt
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
@@ -63,17 +64,64 @@ def cargar(analyzer):
     input_file = csv.DictReader(open(connectionsfile, encoding="utf-8"),delimiter=",")
     for connection in input_file:
         model.addLP_cable(analyzer, connection)
+    """
+    print(gr.numVertices(analyzer["connections_distance"]))
+
+    lista = mp.keySet(analyzer["vertices"])
+    i = 1
+    suma = 0
+    while i <= lt.size(lista):
+        lista2 = mp.get(analyzer["vertices"], lt.getElement(lista, i))["value"]
+        ii = 1
+        lista3 = lt.newList()
+        while ii <= lt.size(lista2):
+            elem = lt.getElement(lista2, ii)["LP_cable"]
+            lt.addLast(lista3, elem)
+            ii += 1
+        print(lista3)
+        print("")
+        
+        suma += lt.size(lista2)
+        i+=1
     
-    
+    print(suma)
+"""
+    """
+    lista = gr.vertices(analyzer["connections_distance"])
+    i = 1
+    final = lt.newList(datastructure="ARRAY_LIST")
+    while i <= lt.size(lista):
+        vertice = lt.getElement(lista, i)
+
+        lt.addLast(final, vertice)
+        i+=1
+    mrge.sort(final,cmpaux)
+    print(final)
+    print("")
+    print(mp.size(analyzer["vertices_aux"]))
+    print("")
+    """
     countriesfile = cf.data_dir + "countries.csv"
     input_file = csv.DictReader(open(countriesfile, encoding="utf-8"),
                                 delimiter=",")
     for country in input_file:
-        mp.put(analyzer["countries"],country["CountryName"],country)
+        model.addCountry(analyzer,country)
+    for country in input_file:
         model.addCapital_V_E(analyzer,country)
     
-    model.edges_same_country(analyzer)
+    model.edges_same_lp(analyzer)
+    
+    """
+    num_lps = gr.numVertices(analyzer["connections_distance"])
+    num_conexiones = gr.numEdges(analyzer["connections_distance"])
+    num_paises = mp.size(analyzer["countries"])
+"""
+    print(mp.size(analyzer["edges"]))
+    num_lps = mp.size(analyzer["landing_points"])
+    num_conexiones = gr.numEdges(analyzer["connections_distance"])
+    num_paises = mp.size(analyzer["countries"])
 
+    return num_lps,num_conexiones,num_paises
     
 # Funciones para la carga de datos
 
@@ -90,3 +138,5 @@ def req1(analyzer,lp1,lp2):
         x=model.req1(analyzer,num1,num2)
         return x
     
+def cmpaux(tupla1,tupla2):
+    return(float(tupla1[0])>=float(tupla2[0]))

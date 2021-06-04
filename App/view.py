@@ -55,7 +55,12 @@ while True:
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         analyzer = controller.init()
-        controller.cargar(analyzer)
+        tupla = controller.cargar(analyzer)
+        print("Número de landing points cargados: ", str(tupla[0]))
+        print("El total de conexiones entre landing points: ", str(tupla[1]))
+        print("Total de paises: ", str(tupla[2]))
+        print
+        
 
     elif int(inputs[0]) == 2:
         lp1=input('Ingrese el primer landing point de interés: ')
@@ -70,7 +75,7 @@ while True:
         else:
             print('\nNo hay información para los landing points ingresados.\n')
         input('Ingrese enter para continuar.')
-        
+    
 
     else:
         sys.exit(0)
