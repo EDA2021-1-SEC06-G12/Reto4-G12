@@ -86,6 +86,8 @@ def newAnalyzer():
         analyzer["landing_points"] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
 
+        analyzer["cables_dado_lpid"] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
         
         analyzer['vertices'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
@@ -123,12 +125,12 @@ def addLandingPoint(analyzer,point):
         city = lista[0]
         country = lista[1]
         mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),country)
-        mp.put(analyzer["id_dado_lp"],city, str(point["landing_point_id"]))
+        mp.put(analyzer["id_dado_lp"],cityandcountry.lower(), str(point["landing_point_id"]))
         mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
         mp.put(analyzer["name_dado_id"], str(point["landing_point_id"]), cityandcountry)
     else:
         mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),lista[0])
-        mp.put(analyzer["id_dado_lp"],lista[0], str(point["landing_point_id"]))
+        mp.put(analyzer["id_dado_lp"],cityandcountry.lower(), str(point["landing_point_id"]))
         mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
         mp.put(analyzer["name_dado_id"], str(point["landing_point_id"]), cityandcountry)
 
@@ -149,6 +151,14 @@ def addLP_cable(analyzer,element):
         mapa_aux = mp.newMap()
         mp.put(analyzer["vertices"],country_origin,mapa_aux)
         mp.put(mapa_aux, LP_cable_origin, element)
+    
+    if mp.contains(analyzer["cables_dado_lpid"], LP_cable_origin[0]):
+        mapa_aux = mp.get(analyzer["cables_dado_lpid"], LP_cable_origin[0])["value"]
+        mp.put(mapa_aux,LP_cable_origin[1],None)
+    else:
+        mapa_aux = mp.newMap()
+        mp.put(analyzer["cables_dado_lpid"],LP_cable_origin[0],mapa_aux)
+        mp.put(mapa_aux, LP_cable_origin[1], None)
 
     id_destination = str(element["destination"])
     country_destination = mp.get(analyzer["landing_points_country"], id_destination)["value"]
@@ -161,6 +171,14 @@ def addLP_cable(analyzer,element):
         mapa_aux = mp.newMap()
         mp.put(analyzer["vertices"],country_destination,mapa_aux)
         mp.put(mapa_aux, LP_cable_destination, element)
+    
+    if mp.contains(analyzer["cables_dado_lpid"], LP_cable_destination[0]):
+        mapa_aux = mp.get(analyzer["cables_dado_lpid"], LP_cable_destination[0])["value"]
+        mp.put(mapa_aux,LP_cable_destination[1],None)
+    else:
+        mapa_aux = mp.newMap()
+        mp.put(analyzer["cables_dado_lpid"],LP_cable_destination[0],mapa_aux)
+        mp.put(mapa_aux, LP_cable_destination[1], None)
 
     if not gr.containsVertex(graph_distance, LP_cable_origin) and not mp.contains(analyzer["vertices_aux"], LP_cable_origin):
         gr.insertVertex(graph_distance, LP_cable_origin)
@@ -379,6 +397,27 @@ def r1(analyzer):
     
     return newmap,n
 
+def req1(analyzer,lpId_1,lpId_2):
+    estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
+    num_clusteres = scc.connectedComponents(estructura_kosaraju)
+
+    cables_1 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_1)["value"])
+    cables_2 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_2)["value"])
+
+    i = 1
+    while i<= lt.size(cables_1):
+        cable_1 = lt.getElement(cables_1, i)
+        ii = 1
+        while ii <= lt.size(cables_2):
+            cable_2 = lt.getElement(cables_2, ii)
+            conectados = scc.stronglyConnected(estructura_kosaraju,(lpId_1,cable_1),(lpId_2,cable_2))
+            if conectados == True:
+                return num_clusteres,True
+            ii +=1 
+        i += 1
+
+    return num_clusteres,False
+"""
 def req1(analyzer,num1,num2):
     x=r1(analyzer)
     mapa=x[0]
@@ -401,7 +440,7 @@ def req1(analyzer,num1,num2):
                 final=True
             i+=1
         return final,n
-
+"""
 def iddadolp(analyzer,lp):
     ide=(mp.get(analyzer['id_dado_lp'],lp))
     if ide!=None:

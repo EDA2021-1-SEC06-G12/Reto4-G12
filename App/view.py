@@ -67,14 +67,22 @@ while True:
         lp2=input('Ingrese el segundo landing point de interés: ')
         x=controller.req1(analyzer,lp1.lower(),lp2.lower())
         if x!=None:
-            print('\nHay un total de '+str(x[1])+' clusters en la red.\n')
-            if x[0]==True:
+            print('\nHay un total de '+str(x[0])+' clusters en la red.\n')
+            if x[1]==True:
                 print(lp1.capitalize()+' y '+lp2.capitalize()+' están en el mismo cluster.\n')
             else:
                 print(lp1.capitalize()+' y '+lp2.capitalize()+' no están en el mismo cluster.\n')
         else:
             print('\nNo hay información para los landing points ingresados.\n')
         input('Ingrese enter para continuar.')
+    
+    elif int(inputs[0]) == 3:
+        lista = controller.req2(analyzer)
+        i = 1
+        while i<=lt.size(lista):
+            lp_numcables= lt.getElement(lista,i)
+            print("Nombre, Pais: " + str(lp_numcables[0]) + "|| Cables conectados: " + str(lp_numcables[1]))
+            i +=1
         
     elif int(inputs[0]) == 4:
         pais1=input('Ingrese el primer país de interés: ')

@@ -116,10 +116,11 @@ def cargar(analyzer):
     num_conexiones = gr.numEdges(analyzer["connections_distance"])
     num_paises = mp.size(analyzer["countries"])
 """
-    print(mp.size(analyzer["edges"]))
+    
     num_lps = mp.size(analyzer["landing_points"])
     num_conexiones = gr.numEdges(analyzer["connections_distance"])
     num_paises = mp.size(analyzer["countries"])
+
 
     return num_lps,num_conexiones,num_paises
     
@@ -137,9 +138,10 @@ def req1(analyzer,lp1,lp2):
     else:
         x=model.req1(analyzer,num1,num2)
         return x
-    
-def cmpaux(tupla1,tupla2):
-    return(float(tupla1[0])>=float(tupla2[0]))
+
+def req2(analyzer):
+    lista = model.req2(analyzer)  
+    return lista
         
 def req3(analyzer,pais1,pais2):
     capital1=model.capital(pais1)
@@ -175,3 +177,6 @@ def req3(analyzer,pais1,pais2):
 
         return distancia
            
+
+def cmpaux(tupla1,tupla2):
+    return(float(tupla1[0])>=float(tupla2[0]))
