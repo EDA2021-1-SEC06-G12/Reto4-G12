@@ -91,6 +91,13 @@ while True:
     
     elif int(inputs[0]) == 5: 
         controller.req4(analyzer)
+    
+    elif int(inputs[0]) == 6: 
+        lp_name = str(input("Ingrese el landing point donde ocurriria el fallo: ")).lower()
+        controller.req5(analyzer,lp_name)
+
+    elif int(inputs[0]) == 7: 
+        None
 
     else:
         sys.exit(0)

@@ -199,10 +199,30 @@ def req3(analyzer,pais1,pais2):
 def req4(analyzer):
     x = model.req4(analyzer)
 
+def req5(analyzer,lp_name):
+    id = mp.get(analyzer["id_dado_lp"], lp_name)["value"]
+    mapa = model.req5(analyzer,id)
+    paises = mp.keySet(mapa)
+    final = lt.newList(datastructure="ARRAY_LIST")
+    i=1
+    while i <= lt.size(paises):
+        pais = lt.getElement(paises, i)
+        distancia = mp.get(mapa, pais)["value"]
+        lt.addLast(final, (pais,distancia))
+        i+=1
+    mrge.sort(final, cmpaux2)
 
+    ii = 1
+    while ii <= lt.size(final):
+        elemento = lt.getElement(final, ii)
+        print("PAIS: " + str(elemento[0]) + " | DISTANCIA (KM): " + str(elemento[1]))
+        ii+=1
 
 
 
 
 def cmpaux(tupla1,tupla2):
     return(float(tupla1[0])>=float(tupla2[0]))
+
+def cmpaux2(tupla1,tupla2):
+    return(float(tupla1[1])>=float(tupla2[1]))

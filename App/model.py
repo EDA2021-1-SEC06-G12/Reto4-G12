@@ -72,6 +72,9 @@ def newAnalyzer():
         analyzer['countries'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
 
+        analyzer["country_dado_city"] = mp.newMap(loadfactor=0.5,
+                                     maptype='PROBING')
+
         analyzer['landing_points_country'] = mp.newMap(loadfactor=0.5,
                                      maptype='PROBING')
         
@@ -116,13 +119,22 @@ def newAnalyzer():
 # Funciones para agregar informacion al grafo
 def addCountry(analyzer,country):
     mp.put(analyzer["countries"],country["CountryName"].lower(),country)
+    mp.put(analyzer["country_dado_city"],country["CapitalName"].lower(),country["CountryName"].lower())
 
 def addLandingPoint(analyzer,point):
     mp.put(analyzer["landing_points"],point["landing_point_id"],point)
 
     cityandcountry = point["name"]
     lista=(cityandcountry.lower()).split(', ')
-    if len(lista) > 1:
+    if len(lista) > 2:
+        city = lista[0] + "," + lista[1]
+        country = lista[2]
+        mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),country)
+        mp.put(analyzer["id_dado_lp"],cityandcountry.lower(), str(point["landing_point_id"]))
+        mp.put(analyzer["location_dado_id"],str(point["landing_point_id"]),(float(point["latitude"]),float(point["longitude"])))
+        mp.put(analyzer["name_dado_id"], str(point["landing_point_id"]), cityandcountry)
+
+    elif len(lista) > 1:
         city = lista[0]
         country = lista[1]
         mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),country)
@@ -206,7 +218,7 @@ def addLP_cable_Edges(analyzer,origin,destination,element):
     if splitted[0] != "n.a.":
         distance = float(splitted[0].replace(",",""))
     else:
-        distance = 100000000000000000000000000000000
+        distance = 500
     
     cost = {"distance":distance,"capacity":float(element["capacityTBPS"])}
 
@@ -464,3 +476,43 @@ def req4(analyzer):
     print(estructura["pq"])
     print("")
     print(estructura["mst"])
+
+
+def req5(analyzer,id):
+    lista_vertices = gr.vertices(analyzer["connections_distance"])
+    lista_vertices_lp = lt.newList(datastructure="ARRAY_LIST")
+    i = 1
+    while i<= lt.size(lista_vertices):
+        vertice = lt.getElement(lista_vertices, i)
+        if vertice[0] == id: 
+            lt.addLast(lista_vertices_lp, vertice)
+        i += 1
+    paises_afectados = mp.newMap()
+    ii = 1
+    while ii <= lt.size(lista_vertices_lp):
+        vertice = lt.getElement(lista_vertices_lp, ii)
+        adyacentes = gr.adjacents(analyzer["connections_distance"], vertice)
+        iii = 1
+        while iii <= lt.size(adyacentes):
+            adyacente = lt.getElement(adyacentes, iii)
+            if adyacente[1] == 0:
+                pais_afectado = mp.get(analyzer["country_dado_city"], adyacente[0])["value"]
+                distancia = gr.getEdge(analyzer["connections_distance"], vertice, adyacente)["weight"]
+
+            else:
+                id_adyacente = adyacente[0]
+                pais_afectado = mp.get(analyzer["landing_points_country"], id_adyacente)["value"]
+                distancia = gr.getEdge(analyzer["connections_distance"], vertice, adyacente)["weight"]
+            
+            if mp.contains(paises_afectados,pais_afectado):
+                valor_ant = mp.get(paises_afectados, pais_afectado)["value"]
+                if distancia < valor_ant:
+                    mp.put(paises_afectados, pais_afectado, distancia)
+            else:
+                mp.put(paises_afectados, pais_afectado,distancia)
+            
+            iii += 1
+
+        ii += 1
+        
+    return paises_afectados
