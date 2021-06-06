@@ -150,7 +150,8 @@ def req1(analyzer,lp1,lp2):
 
 def req2(analyzer):
     lista = model.req2(analyzer)  
-    return lista
+    lista_sorteada = lt.subList(mrge.sort(lista, cmpreq2), 1, 1)
+    return lista_sorteada
         
 def req3(analyzer,pais1,pais2):
     capital1=model.capital(analyzer,pais1.lower())
@@ -217,12 +218,23 @@ def req5(analyzer,lp_name):
         elemento = lt.getElement(final, ii)
         print("PAIS: " + str(elemento[0]) + " | DISTANCIA (KM): " + str(elemento[1]))
         ii+=1
+    print(str(lt.size(final)) + " paises afectados")
 
-
-
+def req6(analyzer,pais,cable):
+    mapa = model.req6(analyzer,pais,cable)
+    lista = mp.keySet(mapa)
+    i = 1
+    while i <= lt.size(lista):
+        pais = lt.getElement(lista, i)
+        ancho_banda = mp.get(mapa, pais)["value"]
+        print("PAIS: " + str(pais) + " ANCHO DE BANDA MAX (MBPS): " + str(ancho_banda))
+        i+=1
 
 def cmpaux(tupla1,tupla2):
     return(float(tupla1[0])>=float(tupla2[0]))
 
 def cmpaux2(tupla1,tupla2):
+    return(float(tupla1[1])>=float(tupla2[1]))
+
+def cmpreq2(tupla1,tupla2):
     return(float(tupla1[1])>=float(tupla2[1]))

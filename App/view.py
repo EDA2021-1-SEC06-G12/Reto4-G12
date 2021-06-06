@@ -53,18 +53,20 @@ while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
+        print("")
         print("Cargando información de los archivos ....")
         analyzer = controller.init()
         tupla = controller.cargar(analyzer)
         print("Número de landing points cargados: ", str(tupla[0]))
         print("El total de conexiones entre landing points: ", str(tupla[1]))
         print("Total de paises: ", str(tupla[2]))
-        print
+        
         
 
     elif int(inputs[0]) == 2:
-        lp1=input('Ingrese el primer landing point de interés: ')
-        lp2=input('Ingrese el segundo landing point de interés: ')
+        print("")
+        lp1=input('Ingrese el primer landing point de interés (ciudad, pais): ')
+        lp2=input('Ingrese el segundo landing point de interés (ciudad, pais): ')
         x=controller.req1(analyzer,lp1.lower(),lp2.lower())
         if x!=None:
             print('\nHay un total de '+str(x[0])+' clusters en la red.\n')
@@ -77,28 +79,34 @@ while True:
         input('Ingrese enter para continuar.')
     
     elif int(inputs[0]) == 3:
+        print("")
         lista = controller.req2(analyzer)
         i = 1
         while i<=lt.size(lista):
             lp_numcables= lt.getElement(lista,i)
-            print("Nombre, Pais: " + str(lp_numcables[0]) + "|| Cables conectados: " + str(lp_numcables[1]))
+            print(str(i) + ") Nombre, Pais: " + str(lp_numcables[0]) + "|| Cables conectados: " + str(lp_numcables[1]))
             i +=1
         
     elif int(inputs[0]) == 4:
+        print("")
         pais1=input('Ingrese el primer país de interés: ')
         pais2=input('Ingrese el segundo país de interés: ')
         controller.req3(analyzer,pais1,pais2)
     
     elif int(inputs[0]) == 5: 
+        print("")
         controller.req4(analyzer)
     
     elif int(inputs[0]) == 6: 
+        print("")
         lp_name = str(input("Ingrese el landing point donde ocurriria el fallo: ")).lower()
         controller.req5(analyzer,lp_name)
 
     elif int(inputs[0]) == 7: 
-        None
-
+        print("")
+        pais = str(input("Ingrese el nombre del país (pais): ")).lower()
+        cable = str(input("Ingrese el nombre del cable (el nombre debe ser exactamente el mismo): "))
+        controller.req6(analyzer,pais,cable)
     else:
         sys.exit(0)
 sys.exit(0)

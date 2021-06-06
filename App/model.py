@@ -27,6 +27,7 @@
 
 import config as cf
 import haversine as hs
+from DISClib.ADT import stack as st
 from DISClib.DataStructures import arraylistiterator as it
 from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
@@ -35,8 +36,10 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
+from DISClib.Algorithms.Graphs import dfs as dfs
 from DISClib.Algorithms.Graphs import prim as pr
 from DISClib.Algorithms.Sorting import mergesort as mrge
+from DISClib.Utils import error as error
 assert cf
 
 """
@@ -104,12 +107,13 @@ def newAnalyzer():
 
 
         analyzer['connections_distance'] = gr.newGraph(datastructure='ADJ_LIST',
-                                              directed=False,
-                                              size=14000, comparefunction=None)
+                                              directed=True, size=5000,
+                                               comparefunction=None)
+
         
         analyzer['connections_capacity'] = gr.newGraph(datastructure='ADJ_LIST',
-                                              directed=False,
-                                              size=14000, comparefunction=None)
+                                              directed=True,size=5000,
+                                                comparefunction=None)
         
         return analyzer
     except Exception as exp:
@@ -262,7 +266,10 @@ def addCapital_V_E(analyzer,element):
             mp.put(analyzer["edges"],edge_identifier,cost)
 
             gr.addEdge(graph_distance, tuple_place_cablename, (city,0), cost["distance"])
+            gr.addEdge(graph_distance, (city,0), tuple_place_cablename, cost["distance"])
+
             gr.addEdge(graph_capacity, tuple_place_cablename, (city,0), cost["capacity"])
+            gr.addEdge(graph_capacity, (city,0), tuple_place_cablename, cost["capacity"])
 
             i+=1
     else:
@@ -298,8 +305,12 @@ def sinMar(analyzer,country,city):
     cost = {"distance":tupla[1],"capacity":float(tupla[2])}
     edge_identifier = (tupla[0],(city,0))
     mp.put(analyzer["edges"],edge_identifier,cost)
+
     gr.addEdge(analyzer["connections_distance"], tupla[0], (city,0), cost["distance"])
+    gr.addEdge(analyzer["connections_distance"], (city,0), tupla[0], cost["distance"])
+
     gr.addEdge(analyzer["connections_capacity"], tupla[0], (city,0), cost["capacity"])
+    gr.addEdge(analyzer["connections_capacity"], (city,0), tupla[0], cost["capacity"])
 
 def edges_same_lp(analyzer):
     lista = mp.keySet(analyzer["vertices"])
@@ -349,7 +360,10 @@ def add_edges_same_lp(analyzer,mapa):
                 cost["capacity"] = min(float(lp1["info"]["capacityTBPS"]),float(lp2["info"]["capacityTBPS"]))
                 mp.put(analyzer["edges"],(lp1_name,lp2_name),cost)
                 gr.addEdge(analyzer["connections_distance"], lp1_name, lp2_name, cost["distance"])
+                gr.addEdge(analyzer["connections_distance"], lp2_name, lp1_name, cost["distance"])
+
                 gr.addEdge(analyzer["connections_capacity"], lp1_name, lp2_name, cost["capacity"])
+                gr.addEdge(analyzer["connections_capacity"], lp2_name, lp1_name, cost["capacity"])
                 e +=1
 
             ii += 1   
@@ -391,25 +405,34 @@ def cmpSinMar(tupla1,tupla2):
 ##Requerimientos
 
 def req1(analyzer,lpId_1,lpId_2):
-    estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
-    num_clusteres = scc.connectedComponents(estructura_kosaraju)
+    try:
+        estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
+        num_clusteres = scc.connectedComponents(estructura_kosaraju)
+    
 
-    cables_1 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_1)["value"])
-    cables_2 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_2)["value"])
+        cables_1 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_1)["value"])
+        cables_2 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_2)["value"])
+        
+        
+        i = 1
+        while i<= lt.size(cables_1):
+            cable_1 = lt.getElement(cables_1, i)
+            ii = 1
+            while ii <= lt.size(cables_2):
+                cable_2 = lt.getElement(cables_2, ii)
+                conectados = scc.stronglyConnected(estructura_kosaraju,(lpId_1,cable_1),(lpId_2,cable_2))
+                if conectados == True:
+                    return num_clusteres,True
+                ii +=1 
+            i += 1
+        
 
-    i = 1
-    while i<= lt.size(cables_1):
-        cable_1 = lt.getElement(cables_1, i)
-        ii = 1
-        while ii <= lt.size(cables_2):
-            cable_2 = lt.getElement(cables_2, ii)
-            conectados = scc.stronglyConnected(estructura_kosaraju,(lpId_1,cable_1),(lpId_2,cable_2))
-            if conectados == True:
-                return num_clusteres,True
-            ii +=1 
-        i += 1
+        return num_clusteres,False
+    except:
+        estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
+        num_clusteres = scc.connectedComponents(estructura_kosaraju)
 
-    return num_clusteres,False
+        return num_clusteres,True
 
 def iddadolp(analyzer,lp):
     ide=(mp.get(analyzer['id_dado_lp'],lp))
@@ -460,7 +483,6 @@ def capital(analyzer,pais):
 
 def distpath(analyzer,capital1,capital2):
     camino=lt.newList()
-    print(capital1)
     estructura=djk.Dijkstra(analyzer['connections_distance'],(capital1,0))
     distancia=djk.distTo(estructura,(capital2,0))
     path=djk.pathTo(estructura,(capital2,0))
@@ -516,3 +538,143 @@ def req5(analyzer,id):
         ii += 1
         
     return paises_afectados
+"""
+def req6(analyzer,pais,cable):
+    print(mp.get(analyzer["id_dado_lp"], "siboney, cuba"))
+    vertices = gr.vertices(analyzer["connections_capacity"])
+    ciudad_cap = mp.get(analyzer["countries"], pais)["value"]["CapitalName"].lower()
+    vertice_ciudad = (ciudad_cap,0)
+    adyacentes_ciudad_cable = adyacentes_ciudad_cabl(analyzer,vertice_ciudad,cable)
+
+    lista_caminos = caminos(analyzer, adyacentes_ciudad_cable)
+    mapa_adyacentestotales = mp.newMap()
+    i = 1
+    while i <= lt.size(lista_caminos):
+        camino = lt.getElement(lista_caminos,i)
+        inicia = lt.firstElement(camino)
+        vertice = lt.lastElement(camino)
+
+        pais_adyacente2 = mp.get(analyzer["landing_points_country"],vertice[0])["value"]
+        poblacion = float(mp.get(analyzer["countries"], pais_adyacente2)["value"]["Population"].replace(".",""))
+        capacity_mbps = float(gr.getEdge(analyzer["connections_capacity"], inicio, vertice)["weight"])*1000000
+        valor = capacity_mbps/poblacion
+        if mp.contains(mapa_adyacentestotales, pais):
+            valor_ant = mp.get(mapa_adyacentestotales, pais)["value"]
+            if valor_ant < valor:
+                mp.put(mapa_adyacentestotales, pais, valor)
+        else:
+            mp.put(mapa_adyacentestotales, pais, valor)
+
+    
+    return mapa_adyacentestotales
+"""
+"""
+def req6(analyzer,pais,cable):
+    print(mp.get(analyzer["id_dado_lp"], "siboney, cuba"))
+
+    ciudad_cap = mp.get(analyzer["countries"], pais)["value"]["CapitalName"].lower()
+    vertice_ciudad = (ciudad_cap,0)
+    adyacentes_ciudad_cable = adyacentes_ciudad_cabl(analyzer,vertice_ciudad,cable)
+    print(adyacentes_ciudad_cable)
+    mapa_adyacentestotales = mp.newMap()
+    i=1
+    while i <= lt.size(adyacentes_ciudad_cable):
+        adyacente = lt.getElement(adyacentes_ciudad_cable,i)
+        print(adyacente)
+        adyacentes2 = gr.adjacents(analyzer["connections_capacity"], adyacente)
+        print(adyacentes2)
+        ii = 1
+        while ii<=lt.size(adyacentes2):
+            adyacente2 = lt.getElement(adyacentes2,ii)
+            print(adyacente2)
+            if adyacente2[1] == cable:
+                pais_adyacente2 = mp.get(analyzer["landing_points_country"],adyacente2[0])["value"]
+                print(pais_adyacente2)
+                poblacion = float(mp.get(analyzer["countries"], pais_adyacente2)["value"]["Population"].replace(".",""))
+                capacity_mbps = float(gr.getEdge(analyzer["connections_capacity"], adyacente, adyacente2)["weight"])*1000000
+                valor = capacity_mbps/poblacion
+                if mp.contains(mapa_adyacentestotales, pais):
+                    valor_ant = mp.get(mapa_adyacentestotales, pais)["value"]
+                    if valor_ant < valor:
+                        mp.put(mapa_adyacentestotales, pais, valor)
+                else:
+                    mp.put(mapa_adyacentestotales, pais, valor)
+
+            ii+=1
+        i+=1
+
+    return mapa_adyacentestotales
+"""
+def req6(analyzer,pais,cable):
+    print(mp.get(analyzer["id_dado_lp"], "siboney, cuba"))
+    vertices = gr.vertices(analyzer["connections_capacity"])
+    ciudad_cap = mp.get(analyzer["countries"], pais)["value"]["CapitalName"].lower()
+    vertice_ciudad = (ciudad_cap,0)
+    adyacentes_ciudad_cable = adyacentes_ciudad_cabl(analyzer,vertice_ciudad,cable)
+
+    mapa_adyacentestotales = mp.newMap()
+    i = 1
+    while i <= lt.size(vertices):
+        vertice = lt.getElement(vertices, i)
+        if vertice[1] == cable:
+            print(vertice)
+            pais_adyacente2 = mp.get(analyzer["landing_points_country"],vertice[0])["value"]
+            print(pais_adyacente2)
+            poblacion = float(mp.get(analyzer["countries"], pais_adyacente2)["value"]["Population"].replace(".",""))
+
+            ii = 1
+            while ii <= lt.size(gr.adjacents(analyzer["connections_capacity"],vertice)):
+                inicio2 = lt.getElement(gr.adjacents(analyzer["connections_capacity"],vertice),ii)
+                if inicio2[1] == cable:
+                    inicio = inicio2
+                    break
+                ii +=1 
+
+            capacity_mbps = float(gr.getEdge(analyzer["connections_capacity"], inicio, vertice)["weight"])*1000000
+            valor = capacity_mbps/poblacion
+            print(valor)
+            if pais_adyacente2 != pais:
+                if mp.contains(mapa_adyacentestotales, pais_adyacente2):
+                    valor_ant = mp.get(mapa_adyacentestotales, pais_adyacente2)["value"]
+                    if valor_ant < valor:
+                        mp.put(mapa_adyacentestotales, pais_adyacente2, valor)
+                else:
+                    mp.put(mapa_adyacentestotales, pais_adyacente2, valor)
+        i+=1
+
+    
+    return mapa_adyacentestotales
+    
+def adyacentes_ciudad_cabl(analyzer,vertice_ciudad,cable):
+    lista_adyacentes = gr.adjacents(analyzer["connections_capacity"], vertice_ciudad)
+    lista_adyacentes_cable = lt.newList(datastructure="ARRAY_LIST")
+
+    i = 1
+    while i <= lt.size(lista_adyacentes):
+        adyacente = lt.getElement(lista_adyacentes, i)
+        if adyacente[1] == cable:
+            lt.addLast(lista_adyacentes_cable, adyacente)
+        i+=1
+    return lista_adyacentes_cable
+
+def caminos(analyzer,adyacentes_ciudad_cable):
+    lista_caminos = lt.newList(datastructure="ARRAY_LIST")
+    vertices = gr.vertices(analyzer["connections_capacity"])
+
+    i = 1
+    while i <= lt.size(adyacentes_ciudad_cable):
+        adyacente = lt.getElement(adyacentes_ciudad_cable,i)
+        dfs_adyacente = dfs.DepthFirstSearch(analyzer["connections_capacity"], adyacente)
+
+        ii = 1
+        while ii <= lt.size(vertices):
+            vertice = lt.getElement(vertices, ii)
+            if vertice[1] == cable:
+                verdad = dfs.hasPathTo(dfs_adyacente, vertice)
+                camino = dfs.pathTo(dfs_adyacente, vertice)
+                lt.addLast(lista_caminos,camino)
+            ii += 1
+        
+        i+=1
+    
+    return lista_caminos
