@@ -148,8 +148,16 @@ def req2(analyzer):
     delta_time = stop_time - start_time
     delta_memory = deltaMemory(start_memory, stop_memory)
 
+    
+    i=1
+    while i<=lt.size(lista_sorteada):
+            lp_numcables= lt.getElement(lista_sorteada,i)
+            x=str(lp_numcables[0])
+            print(str(i) + ") Nombre, País: " + x + " || ID: "+str(model.iddadolp(analyzer,x.lower()))+" || Cables conectados: " + str(lp_numcables[1]))
+            i+=1
+    
     return lista_sorteada
-        
+    
 def req3(analyzer,pais1,pais2):
 
     delta_time = -1.0
@@ -167,9 +175,7 @@ def req3(analyzer,pais1,pais2):
         distpath=model.distpath(analyzer,capital1,capital2)
         distancia=distpath[0]
         path = distpath[1]
-        
-        print('La distancia total de la ruta es de: '+str(distancia)+' km.')
-        print("")
+        print('\nLa distancia total de la ruta es de: '+str(distancia)+' km.')
         print('\nLa ruta está dada por: ')
         
         i = 1
@@ -177,7 +183,7 @@ def req3(analyzer,pais1,pais2):
         while i<=inicial:
             sub = st.pop(path)
             if i == 1:
-                vertexA = sub["vertexA"][0] + str(" " + str(pais1))
+                vertexA = (sub["vertexA"][0]).capitalize() + ", " + (str(pais1)).capitalize()
                 cableA = "CAPITAL"
             else:
                 place = mp.get(analyzer["name_dado_id"], sub["vertexA"][0])
@@ -191,13 +197,13 @@ def req3(analyzer,pais1,pais2):
             place = mp.get(analyzer["name_dado_id"], sub["vertexB"][0])
             if place != None:
                 vertexB = place["value"]
-                cableB = str(sub["vertexB"][1])
             else:
                 vertexB = sub["vertexB"][0].upper() 
-                cableB = "CAPITAL"
-
-            print("---------------------")
-            print(str(i) + ") ACTUAL: " + str(vertexA) +" |CABLE: "+ cableA  + " -> SIGUIENTE: " + str(vertexB) +" |CABLE: "+ cableB + str(" | DISTANCIA (KM): ") +str(sub["weight"]))
+            if i>1:
+                print("-------------------------------------------------------------")
+            else:
+                print('')
+            print(str(vertexA) + " ——> " + str(vertexB) +" || CABLE: "+ cableA  +str(" || DISTANCIA (km): ") +str(sub["weight"]))
             i += 1
         stop_memory = getMemory()
         stop_time = getTime()
@@ -241,8 +247,8 @@ def req5(analyzer,lp_name):
     tracemalloc.start()
     start_time = getTime()
     start_memory = getMemory()
-
-    id = mp.get(analyzer["id_dado_lp"], lp_name)["value"]
+    """
+id = mp.get(analyzer["id_dado_lp"], lp_name)["value"]
     mapa = model.req5(analyzer,id)
     paises = mp.keySet(mapa)
     final = lt.newList(datastructure="ARRAY_LIST")
@@ -253,13 +259,28 @@ def req5(analyzer,lp_name):
         lt.addLast(final, (pais,distancia))
         i+=1
     mrge.sort(final, cmpaux2)
+"""
+    ide = mp.get(analyzer["id_dado_lp"], lp_name)
+    if ide!=None:
+        mapa = model.req5(analyzer,ide["value"])
+        paises = mp.keySet(mapa)
+        final = lt.newList(datastructure="ARRAY_LIST")
+        i=1
+        while i <= lt.size(paises):
+            pais = lt.getElement(paises, i)
+            distancia = mp.get(mapa, pais)["value"]
+            lt.addLast(final, (pais,distancia))
+            i+=1
+        mrge.sort(final, cmpaux2)
 
-    ii = 1
-    while ii <= lt.size(final):
-        elemento = lt.getElement(final, ii)
-        print("PAIS: " + str(elemento[0]) + " | DISTANCIA (KM): " + str(elemento[1]))
-        ii+=1
-    print(str(lt.size(final)) + " paises afectados")
+        ii = 1
+        while ii <= lt.size(final):
+            elemento = lt.getElement(final, ii)
+            print("PAÍS: " + str(elemento[0]) + " | DISTANCIA (km): " + str(elemento[1]))
+            ii+=1
+        print(str(lt.size(final)) + " países afectados.")
+    else:
+        print('No hay información para este landing point.')
 
     stop_memory = getMemory()
     stop_time = getTime()
@@ -298,6 +319,7 @@ def req6(analyzer,pais,cable):
     delta_memory = deltaMemory(start_memory, stop_memory)
 
     return None
+        
 
 def cmpaux(tupla1,tupla2):
     return(float(tupla1[0])>=float(tupla2[0]))

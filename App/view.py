@@ -30,6 +30,7 @@ from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import cycles as ccs
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
+import sys
 assert config
 
 
@@ -41,9 +42,16 @@ operación solicitada
 """
 
 def printMenu():
-    print("Bienvenido")
-    print("1 - Cargar información en el catálogo")
-    print('2 - Hallar cantidad de clústeres dentro de la red de cables submarinos y averiguar si dos landing points al mismo clúster.')
+    print("\nBienvenido")
+    print("1 — Cargar información en el catálogo")
+    print('2 — Hallar cantidad de clústeres dentro de la red de cables submarinos y averiguar si dos landing points pertenecen al mismo clúster.')
+    print('3 — Hallar los landing points que sirven como punto de interconexión a más cables en la red.')
+    print('4 — Hallar ruta mínima en distancia para enviar información entre dos países.')
+    print('5 — Identificar la infraestructura crítica para poder garantizar su mantenimiento preventivo.')
+    print('6 — Conocer impacto que tendría el fallo de un determinado landing point que afecta a todos sus cables conectados.')
+    print('7 — Conocer el ancho de banda máximo que se puede garantizar para la transmisión de un servidor ubicado en un país desde todos los países conectados a un cable.')
+    print('0 — Salir')
+
 
 
 """
@@ -51,18 +59,18 @@ Menu principal
 """
 while True:
     printMenu()
-    inputs = input('Seleccione una opción para continuar\n')
+    inputs = input('\nSeleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("")
         print("Cargando información de los archivos ....")
         analyzer = controller.init()
         tupla = controller.cargar(analyzer)
-        print("Número de landing points cargados: ", str(tupla[0]))
+        print("\nNúmero de landing points cargados: ", str(tupla[0]))
         print("El total de conexiones entre landing points: ", str(tupla[1]))
         print("Total de paises: ", str(tupla[2]))
+        input('\nPresione enter para continuar.\n')
         
         
-
     elif int(inputs[0]) == 2:
         print("")
         lp1=input('Ingrese el primer landing point de interés (ciudad, pais): ')
@@ -76,37 +84,45 @@ while True:
                 print(lp1.capitalize()+' y '+lp2.capitalize()+' no están en el mismo cluster.\n')
         else:
             print('\nNo hay información para los landing points ingresados.\n')
-        input('Ingrese enter para continuar.')
+        input('\nPresione enter para continuar.\n')
     
+
     elif int(inputs[0]) == 3:
-        print("")
-        lista = controller.req2(analyzer)
-        i = 1
-        while i<=lt.size(lista):
-            lp_numcables= lt.getElement(lista,i)
-            print(str(i) + ") Nombre, Pais: " + str(lp_numcables[0]) + "|| Cables conectados: " + str(lp_numcables[1]))
-            i +=1
-        
+        print('')
+        controller.req2(analyzer)
+        print('')
+        input('\nPresione enter para continuar.\n')
+
+
     elif int(inputs[0]) == 4:
         print("")
         pais1=input('Ingrese el primer país de interés: ')
         pais2=input('Ingrese el segundo país de interés: ')
         controller.req3(analyzer,pais1,pais2)
-    
+        input('\nPresione enter para continuar.')
+
+
     elif int(inputs[0]) == 5: 
         print("")
         controller.req4(analyzer)
-    
+        input('\nPresione enter para continuar.\n')
+
+
     elif int(inputs[0]) == 6: 
         print("")
         lp_name = str(input("Ingrese el landing point donde ocurriria el fallo: ")).lower()
         controller.req5(analyzer,lp_name)
+        input('\nPresione enter para continuar.\n')
+
 
     elif int(inputs[0]) == 7: 
         print("")
         pais = str(input("Ingrese el nombre del país (pais): ")).lower()
         cable = str(input("Ingrese el nombre del cable (el nombre debe ser exactamente el mismo): "))
         controller.req6(analyzer,pais,cable)
+        input('\nPresione enter para continuar.\n')
+
+
     else:
         sys.exit(0)
 sys.exit(0)
