@@ -77,19 +77,23 @@ while True:
         lp2=input('Ingrese el segundo landing point de interés (ciudad, pais): ')
         x=controller.req1(analyzer,lp1.lower(),lp2.lower())
         if x!=None:
-            print('\nHay un total de '+str(x[0])+' clusters en la red.\n')
-            if x[1]==True:
+            print('\nHay un total de '+str(x[0][0])+' clusters en la red.\n')
+            if x[0][1]==True:
                 print(lp1.capitalize()+' y '+lp2.capitalize()+' están en el mismo cluster.\n')
             else:
                 print(lp1.capitalize()+' y '+lp2.capitalize()+' no están en el mismo cluster.\n')
         else:
             print('\nNo hay información para los landing points ingresados.\n')
+        
+        print("Tiempo [ms]: "+f"{x[1]:.3f}"+" ||  "+"Memoria [kB]: "+f"{x[2]:.3f}"+'\n')
         input('\nPresione enter para continuar.\n')
     
 
     elif int(inputs[0]) == 3:
         print('')
-        controller.req2(analyzer)
+        x = controller.req2(analyzer)
+        print('')
+        print("Tiempo [ms]: "+f"{x[0]:.3f}"+" ||  "+"Memoria [kB]: "+f"{x[1]:.3f}"+'\n')
         print('')
         input('\nPresione enter para continuar.\n')
 
@@ -98,20 +102,29 @@ while True:
         print("")
         pais1=input('Ingrese el primer país de interés: ')
         pais2=input('Ingrese el segundo país de interés: ')
-        controller.req3(analyzer,pais1,pais2)
+        x = controller.req3(analyzer,pais1,pais2)
+        print('')
+        print("Tiempo [ms]: "+f"{x[0]:.3f}"+" ||  "+"Memoria [kB]: "+f"{x[1]:.3f}"+'\n')
+        print('')
         input('\nPresione enter para continuar.')
 
 
     elif int(inputs[0]) == 5: 
         print("")
-        controller.req4(analyzer)
+        x = controller.req4(analyzer)
+        print('')
+        print("Tiempo [ms]: "+f"{x[0]:.3f}"+" ||  "+"Memoria [kB]: "+f"{x[1]:.3f}"+'\n')
+        print('')
         input('\nPresione enter para continuar.\n')
 
 
     elif int(inputs[0]) == 6: 
         print("")
         lp_name = str(input("Ingrese el landing point donde ocurriria el fallo: ")).lower()
-        controller.req5(analyzer,lp_name)
+        x = controller.req5(analyzer,lp_name)
+        print('')
+        print("Tiempo [ms]: "+f"{x[0]:.3f}"+" ||  "+"Memoria [kB]: "+f"{x[1]:.3f}"+'\n')
+        print('')
         input('\nPresione enter para continuar.\n')
 
 
@@ -119,9 +132,11 @@ while True:
         print("")
         pais = str(input("Ingrese el nombre del país (pais): ")).lower()
         cable = str(input("Ingrese el nombre del cable (el nombre debe ser exactamente el mismo): "))
-        controller.req6(analyzer,pais,cable)
+        x = controller.req6(analyzer,pais,cable)
+        print('')
+        print("Tiempo [ms]: "+f"{x[0]:.3f}"+" ||  "+"Memoria [kB]: "+f"{x[1]:.3f}"+'\n')
+        print('')
         input('\nPresione enter para continuar.\n')
-
 
     else:
         sys.exit(0)

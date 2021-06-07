@@ -128,7 +128,7 @@ def req1(analyzer,lp1,lp2):
         delta_time = stop_time - start_time
         delta_memory = deltaMemory(start_memory, stop_memory)
 
-        return x
+        return x,delta_time,delta_memory
 
 def req2(analyzer):
     delta_time = -1.0
@@ -156,7 +156,7 @@ def req2(analyzer):
             print(str(i) + ") Nombre, País: " + x + " || ID: "+str(model.iddadolp(analyzer,x.lower()))+" || Cables conectados: " + str(lp_numcables[1]))
             i+=1
     
-    return lista_sorteada
+    return delta_time,delta_memory
     
 def req3(analyzer,pais1,pais2):
 
@@ -212,7 +212,7 @@ def req3(analyzer,pais1,pais2):
         delta_time = stop_time - start_time
         delta_memory = deltaMemory(start_memory, stop_memory)
         
-        return None
+        return delta_time,delta_memory
            
 def req4(analyzer):
     delta_time = -1.0
@@ -227,8 +227,11 @@ def req4(analyzer):
     costo = x[1]
     camino = x[2]
     print("El número de nodos conectados a la red de expansión mínima es: " + str(num_nodos))
+    print("")
     print("El costo total (distancia en [km]) de la red de expansión mínima es: " + str(costo))
+    print("")
     print("Rama más larga: ")
+    print("")
     print(camino)
 
     stop_memory = getMemory()
@@ -238,7 +241,7 @@ def req4(analyzer):
     delta_time = stop_time - start_time
     delta_memory = deltaMemory(start_memory, stop_memory)
 
-    return None
+    return delta_time,delta_memory
 
 def req5(analyzer,lp_name):
     delta_time = -1.0
@@ -289,7 +292,7 @@ id = mp.get(analyzer["id_dado_lp"], lp_name)["value"]
     delta_time = stop_time - start_time
     delta_memory = deltaMemory(start_memory, stop_memory)
 
-    return None
+    return delta_time,delta_memory
 
 def req6(analyzer,pais,cable):
     delta_time = -1.0
@@ -318,7 +321,7 @@ def req6(analyzer,pais,cable):
     delta_time = stop_time - start_time
     delta_memory = deltaMemory(start_memory, stop_memory)
 
-    return None
+    return delta_time,delta_memory
         
 
 def cmpaux(tupla1,tupla2):
