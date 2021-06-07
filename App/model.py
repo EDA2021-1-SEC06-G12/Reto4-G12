@@ -38,6 +38,7 @@ from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Algorithms.Graphs import dfs as dfs
 from DISClib.Algorithms.Graphs import prim as pr
+from DISClib.Algorithms.Graphs import bellmanford as bf
 from DISClib.Algorithms.Sorting import mergesort as mrge
 from DISClib.Utils import error as error
 assert cf
@@ -494,10 +495,66 @@ def req4(analyzer):
     """
     estructura = pr.PrimMST(analyzer["connections_distance"])
     costo_total = pr.weightMST(analyzer["connections_distance"], estructura)
-    print(costo_total)
-    print(estructura["pq"])
-    print("")
-    print(estructura["mst"])
+
+    grafo_mst = gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=True, size=5000,
+                                               comparefunction=None)
+    i = 1
+    while i<= lt.size(estructura["mst"]):
+        arista = lt.getElement(estructura["mst"], i)
+        verticeA = arista["vertexA"]
+        verticeB = arista["vertexB"]
+        weight = arista["weight"]
+
+        if not gr.containsVertex(grafo_mst, verticeA):
+            gr.insertVertex(grafo_mst, verticeA)
+
+        if not gr.containsVertex(grafo_mst, verticeB):
+            gr.insertVertex(grafo_mst, verticeB)
+        
+        gr.addEdge(grafo_mst, verticeA, verticeB, weight)
+        gr.addEdge(grafo_mst, verticeB, verticeA, weight)
+
+        i += 1
+
+    num_vertices = gr.numVertices(grafo_mst)
+
+    vertices_mst = gr.vertices(grafo_mst)
+
+    inicio = lt.firstElement(estructura["mst"])["vertexA"]
+   
+    final = lt.lastElement(estructura["mst"])["vertexB"]
+
+    estructura_dfs = dfs.DepthFirstSearch(grafo_mst, inicio)
+    caminoo = dfs.pathTo(estructura_dfs, final)
+    
+    
+
+    """
+    ii = 1
+    camino_fin = None
+    tamaño_camino_fin = -1
+
+    while ii <= lt.size(vertices_mst):
+        print(ii)
+        vertice_mst = lt.getElement(vertices_mst,ii)
+        print(vertice_mst)
+        estructura_dfs = dfs.DepthFirstSearch(grafo_mst, inicio)
+        if dfs.hasPathTo(estructura_dfs, vertice_mst) and vertice_mst != inicio:
+            camino = dfs.pathTo(estructura_dfs, vertice_mst)
+            print(camino)
+            tamaño_camino = st.size(camino)
+            if tamaño_camino_fin < tamaño_camino:
+                camino_fin = camino 
+        ii+=1
+
+    print(caminoo)
+    print(camino_fin)
+    """
+    
+    return num_vertices, costo_total,caminoo
+    
+    
 
 
 def req5(analyzer,id):
@@ -538,75 +595,9 @@ def req5(analyzer,id):
         ii += 1
         
     return paises_afectados
-"""
+
 def req6(analyzer,pais,cable):
-    print(mp.get(analyzer["id_dado_lp"], "siboney, cuba"))
-    vertices = gr.vertices(analyzer["connections_capacity"])
-    ciudad_cap = mp.get(analyzer["countries"], pais)["value"]["CapitalName"].lower()
-    vertice_ciudad = (ciudad_cap,0)
-    adyacentes_ciudad_cable = adyacentes_ciudad_cabl(analyzer,vertice_ciudad,cable)
 
-    lista_caminos = caminos(analyzer, adyacentes_ciudad_cable)
-    mapa_adyacentestotales = mp.newMap()
-    i = 1
-    while i <= lt.size(lista_caminos):
-        camino = lt.getElement(lista_caminos,i)
-        inicia = lt.firstElement(camino)
-        vertice = lt.lastElement(camino)
-
-        pais_adyacente2 = mp.get(analyzer["landing_points_country"],vertice[0])["value"]
-        poblacion = float(mp.get(analyzer["countries"], pais_adyacente2)["value"]["Population"].replace(".",""))
-        capacity_mbps = float(gr.getEdge(analyzer["connections_capacity"], inicio, vertice)["weight"])*1000000
-        valor = capacity_mbps/poblacion
-        if mp.contains(mapa_adyacentestotales, pais):
-            valor_ant = mp.get(mapa_adyacentestotales, pais)["value"]
-            if valor_ant < valor:
-                mp.put(mapa_adyacentestotales, pais, valor)
-        else:
-            mp.put(mapa_adyacentestotales, pais, valor)
-
-    
-    return mapa_adyacentestotales
-"""
-"""
-def req6(analyzer,pais,cable):
-    print(mp.get(analyzer["id_dado_lp"], "siboney, cuba"))
-
-    ciudad_cap = mp.get(analyzer["countries"], pais)["value"]["CapitalName"].lower()
-    vertice_ciudad = (ciudad_cap,0)
-    adyacentes_ciudad_cable = adyacentes_ciudad_cabl(analyzer,vertice_ciudad,cable)
-    print(adyacentes_ciudad_cable)
-    mapa_adyacentestotales = mp.newMap()
-    i=1
-    while i <= lt.size(adyacentes_ciudad_cable):
-        adyacente = lt.getElement(adyacentes_ciudad_cable,i)
-        print(adyacente)
-        adyacentes2 = gr.adjacents(analyzer["connections_capacity"], adyacente)
-        print(adyacentes2)
-        ii = 1
-        while ii<=lt.size(adyacentes2):
-            adyacente2 = lt.getElement(adyacentes2,ii)
-            print(adyacente2)
-            if adyacente2[1] == cable:
-                pais_adyacente2 = mp.get(analyzer["landing_points_country"],adyacente2[0])["value"]
-                print(pais_adyacente2)
-                poblacion = float(mp.get(analyzer["countries"], pais_adyacente2)["value"]["Population"].replace(".",""))
-                capacity_mbps = float(gr.getEdge(analyzer["connections_capacity"], adyacente, adyacente2)["weight"])*1000000
-                valor = capacity_mbps/poblacion
-                if mp.contains(mapa_adyacentestotales, pais):
-                    valor_ant = mp.get(mapa_adyacentestotales, pais)["value"]
-                    if valor_ant < valor:
-                        mp.put(mapa_adyacentestotales, pais, valor)
-                else:
-                    mp.put(mapa_adyacentestotales, pais, valor)
-
-            ii+=1
-        i+=1
-
-    return mapa_adyacentestotales
-"""
-def req6(analyzer,pais,cable):
-    print(mp.get(analyzer["id_dado_lp"], "siboney, cuba"))
     vertices = gr.vertices(analyzer["connections_capacity"])
     ciudad_cap = mp.get(analyzer["countries"], pais)["value"]["CapitalName"].lower()
     vertice_ciudad = (ciudad_cap,0)
@@ -617,9 +608,9 @@ def req6(analyzer,pais,cable):
     while i <= lt.size(vertices):
         vertice = lt.getElement(vertices, i)
         if vertice[1] == cable:
-            print(vertice)
+            
             pais_adyacente2 = mp.get(analyzer["landing_points_country"],vertice[0])["value"]
-            print(pais_adyacente2)
+            
             poblacion = float(mp.get(analyzer["countries"], pais_adyacente2)["value"]["Population"].replace(".",""))
 
             ii = 1
@@ -632,7 +623,7 @@ def req6(analyzer,pais,cable):
 
             capacity_mbps = float(gr.getEdge(analyzer["connections_capacity"], inicio, vertice)["weight"])*1000000
             valor = capacity_mbps/poblacion
-            print(valor)
+           
             if pais_adyacente2 != pais:
                 if mp.contains(mapa_adyacentestotales, pais_adyacente2):
                     valor_ant = mp.get(mapa_adyacentestotales, pais_adyacente2)["value"]

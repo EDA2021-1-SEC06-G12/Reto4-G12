@@ -199,6 +199,13 @@ def req3(analyzer,pais1,pais2):
            
 def req4(analyzer):
     x = model.req4(analyzer)
+    num_nodos = x[0]
+    costo = x[1]
+    camino = x[2]
+    print("El número de nodos conectados a la red de expansión mínima es: " + str(num_nodos))
+    print("El costo total (distancia en [km]) de la red de expansión mínima es: " + str(costo))
+    print("Rama más larga: ")
+    print(camino)
 
 def req5(analyzer,lp_name):
     id = mp.get(analyzer["id_dado_lp"], lp_name)["value"]
@@ -229,6 +236,9 @@ def req6(analyzer,pais,cable):
         ancho_banda = mp.get(mapa, pais)["value"]
         print("PAIS: " + str(pais) + " ANCHO DE BANDA MAX (MBPS): " + str(ancho_banda))
         i+=1
+    
+    if lt.size(lista) == 0:
+        print("Ningún pais además de " + str(pais).upper() + " fue afectado")
 
 def cmpaux(tupla1,tupla2):
     return(float(tupla1[0])>=float(tupla2[0]))
