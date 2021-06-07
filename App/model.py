@@ -53,14 +53,7 @@ los mismos.
 # Funciones para agregar informacion al catalogo
 
 def newAnalyzer():
-    """ Inicializa el analizador
-   countries: Tabla de hash para guardar los paises
-   landing_points: Tabla de hash para guardar los vertices del grafo
-   connections: Grafo para representar las rutas entre landing_points
-   components: Almacena la informacion de los componentes conectados
-   paths: Estructura que almancena los caminos de costo minimo desde un
-           vertice determinado a todos los otros vértices del grafo
-    """
+  
     try:
         analyzer = {
                     'countries': None,
@@ -132,7 +125,7 @@ def addLandingPoint(analyzer,point):
     cityandcountry = point["name"]
     lista=(cityandcountry.lower()).split(', ')
     if len(lista) > 2:
-        city = lista[0] + "," + lista[1]
+        city = lista[0] + ", " + lista[1]
         country = lista[2]
         mp.put(analyzer["landing_points_country"],str(point["landing_point_id"]),country)
         mp.put(analyzer["id_dado_lp"],cityandcountry.lower(), str(point["landing_point_id"]))
@@ -410,25 +403,13 @@ def req1(analyzer,lpId_1,lpId_2):
         estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
         num_clusteres = scc.connectedComponents(estructura_kosaraju)
     
+        cable_1 = lt.getElement(mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_1)["value"]),1)
+        cable_2 = lt.getElement(mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_2)["value"]),1)
+        
+        valor = scc.stronglyConnected(estructura_kosaraju,(lpId_1,cable_1),(lpId_2,cable_2))
+        
+        return num_clusteres,valor
 
-        cables_1 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_1)["value"])
-        cables_2 = mp.keySet(mp.get(analyzer["cables_dado_lpid"], lpId_2)["value"])
-        
-        
-        i = 1
-        while i<= lt.size(cables_1):
-            cable_1 = lt.getElement(cables_1, i)
-            ii = 1
-            while ii <= lt.size(cables_2):
-                cable_2 = lt.getElement(cables_2, ii)
-                conectados = scc.stronglyConnected(estructura_kosaraju,(lpId_1,cable_1),(lpId_2,cable_2))
-                if conectados == True:
-                    return num_clusteres,True
-                ii +=1 
-            i += 1
-        
-
-        return num_clusteres,False
     except:
         estructura_kosaraju = scc.KosarajuSCC(analyzer["connections_distance"])
         num_clusteres = scc.connectedComponents(estructura_kosaraju)
@@ -452,12 +433,7 @@ def req2(analyzer):
             lp_id = elem[0]
             lp_name = mp.get(analyzer["name_dado_id"], lp_id)["value"]
             lista_adyacentes = gr.adjacents(analyzer["connections_distance"], elem)
-            """
-            print("")
-            print(lista_adyacentes)
-            print("")
-            print(elem)
-            """
+
             ii = 1
             e = 0
             while ii <= lt.size(lista_adyacentes):
@@ -490,9 +466,6 @@ def distpath(analyzer,capital1,capital2):
     return distancia,path
 
 def req4(analyzer):
-    """
-    nada de esto funciona ni se que hace
-    """
     estructura = pr.PrimMST(analyzer["connections_distance"])
     costo_total = pr.weightMST(analyzer["connections_distance"], estructura)
 
@@ -528,29 +501,6 @@ def req4(analyzer):
     estructura_dfs = dfs.DepthFirstSearch(grafo_mst, inicio)
     caminoo = dfs.pathTo(estructura_dfs, final)
     
-    
-
-    """
-    ii = 1
-    camino_fin = None
-    tamaño_camino_fin = -1
-
-    while ii <= lt.size(vertices_mst):
-        print(ii)
-        vertice_mst = lt.getElement(vertices_mst,ii)
-        print(vertice_mst)
-        estructura_dfs = dfs.DepthFirstSearch(grafo_mst, inicio)
-        if dfs.hasPathTo(estructura_dfs, vertice_mst) and vertice_mst != inicio:
-            camino = dfs.pathTo(estructura_dfs, vertice_mst)
-            print(camino)
-            tamaño_camino = st.size(camino)
-            if tamaño_camino_fin < tamaño_camino:
-                camino_fin = camino 
-        ii+=1
-
-    print(caminoo)
-    print(camino_fin)
-    """
     
     return num_vertices, costo_total,caminoo
     
